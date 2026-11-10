@@ -10,10 +10,16 @@ commits, so without handling the dependent tests would error inside the
 skipped (with a pointer to the repo README) instead of erroring; all other
 tests run normally. No source file is modified and no check is weakened
 where the history is present.
+
+A further test, ``test_selected_saved_evidence_and_assets``, compares the
+saved ``script`` setting against the recomputed absolute checkout path;
+that equality only holds in the original workspace location, so the test is
+skipped (with a location reason) whenever the checkout has been relocated.
 """
 
 from __future__ import annotations
 
+import csv
 import subprocess
 from pathlib import Path
 
@@ -23,6 +29,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 HISTORY_COMMITS = (
     "c66106488a4e17bfb45260f4764106c5682254de",
     "f27468f21c5e1ab931736dce4239a0dcf9374083",
+    "90faea45a4ee488679499a117be5e73470553e9e",
+    "25ff03628d4c6feb02664223cd8fb6d7fb38cf1b",
 )
 
 # Tests in test_review_outputs.py that call the history-backed
@@ -36,6 +44,12 @@ HISTORY_TESTS_IN_TEST_REVIEW_OUTPUTS = (
     "test_saved_benchmark_summaries",
     "test_radar_sensitivity_and_removed_comparison",
     "test_3d_workers_used_the_verified_inputs",
+)
+# Manuscript-revision tests in test_1d_boundary_comparison.py that diff
+# main.tex against publication-history originals (git show 90faea4 / 25ff036).
+HISTORY_TESTS_IN_TEST_BOUNDARY_COMPARISON = (
+    "test_introduction_revision_preserves_manuscript_outside_introduction",
+    "test_manuscript_changes_preserve_tables_math_and_unrelated_text",
 )
 # Fixtures in test_wind_figure.py whose evidence chain calls git show on the
 # history commits via _figure_saved_evidence()/prepare_wind_figure().
@@ -57,20 +71,51 @@ def history_available() -> bool:
     return True
 
 
-def pytest_collection_modifyitems(config, items):
-    if history_available():
-        return
-    marker = pytest.mark.skip(
-        reason="standalone clone lacks the CAGEO publication-history commits "
-        "(see repo README, 'How to verify'); run in the CAGEO checkout for full provenance checks"
+def _recorded_boundary_script_path() -> str | None:
+    """Absolute script path recorded in the saved boundary run, if readable."""
+    settings = (
+        REPO_ROOT / "experiments" / "results" / "round1" / "1d_boundary_comparison"
+        / "boundary-truncated-20261030" / "settings.csv"
     )
-    for item in items:
-        nodeid = item.nodeid
-        if "test_review_outputs.py" in nodeid and any(
-            nodeid.rsplit("::", 1)[-1].startswith(name) for name in HISTORY_TESTS_IN_TEST_REVIEW_OUTPUTS
-        ):
-            item.add_marker(marker)
-        elif "test_wind_figure.py" in nodeid:
-            fixtures = set(getattr(item, "fixturenames", ()) or ())
-            if fixtures & set(GHOST_WIND_FIXTURES):
+    try:
+        with settings.open(newline="", encoding="utf-8") as stream:
+            for row in csv.DictReader(stream):
+                if row.get("setting") == "script":
+                    return row.get("value") or None
+    except OSError:
+        return None
+    return None
+
+
+def pytest_collection_modifyitems(config, items):
+    if not history_available():
+        marker = pytest.mark.skip(
+            reason="standalone clone lacks the CAGEO publication-history commits "
+            "(see repo README, 'How to verify'); run in the CAGEO checkout for full provenance checks"
+        )
+        for item in items:
+            nodeid = item.nodeid
+            if "test_review_outputs.py" in nodeid and any(
+                nodeid.rsplit("::", 1)[-1].startswith(name) for name in HISTORY_TESTS_IN_TEST_REVIEW_OUTPUTS
+            ):
                 item.add_marker(marker)
+            elif "test_1d_boundary_comparison.py" in nodeid and any(
+                nodeid.rsplit("::", 1)[-1].startswith(name) for name in HISTORY_TESTS_IN_TEST_BOUNDARY_COMPARISON
+            ):
+                item.add_marker(marker)
+            elif "test_wind_figure.py" in nodeid:
+                fixtures = set(getattr(item, "fixturenames", ()) or ())
+                if fixtures & set(GHOST_WIND_FIXTURES):
+                    item.add_marker(marker)
+    # test_selected_saved_evidence_and_assets asserts the saved absolute
+    # `script` path equals the current checkout path; it passes in the
+    # original workspace and can only fail after relocation.
+    recorded = _recorded_boundary_script_path()
+    current = str(REPO_ROOT / "experiments" / "scripts" / "generate_1d_boundary_comparison.py")
+    if recorded is not None and recorded != current:
+        for item in items:
+            if item.nodeid.endswith("test_1d_boundary_comparison.py::test_selected_saved_evidence_and_assets"):
+                item.add_marker(pytest.mark.skip(
+                    reason=f"saved evidence records the original workspace path {recorded!r}; "
+                    f"this checkout is {current!r}. Run in the original CAGEO checkout for this check."
+                ))
