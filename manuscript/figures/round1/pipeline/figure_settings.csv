@@ -1,0 +1,35 @@
+figure,setting,value
+masked_statistics_pipeline,backend,Agg
+masked_statistics_pipeline,background,"white, opaque"
+masked_statistics_pipeline,base_font_size_pt,10.0
+masked_statistics_pipeline,canvas_cropping,none (fixed figsize)
+masked_statistics_pipeline,completion_scope,default API completion described separately in Section 3.3; not validated here
+masked_statistics_pipeline,coverage_and_count,"rho=clip(d,0,1); N_eq=A*rho; independent of moment acceptance"
+masked_statistics_pipeline,definition_source,"manuscript/main.tex, Sections 2.1 and 3.1-3.3"
+masked_statistics_pipeline,export_dpi,300
+masked_statistics_pipeline,figure_height_in,5.6
+masked_statistics_pipeline,figure_helper_sha256,b93d58ee7d36c707f434c529053f254b22117122da8cb1157ca1e6d14a2167a6
+masked_statistics_pipeline,figure_kind,conceptual diagram; no new experiment or numerical results
+masked_statistics_pipeline,figure_width_in,6.5
+masked_statistics_pipeline,font_family,"[""DejaVu Sans""]"
+masked_statistics_pipeline,input_rule,m=1 for retained finite observations; x_m and x_m^(2) explicitly zero elsewhere
+masked_statistics_pipeline,interpretation,population-moment and coverage-fraction interpretations require nonnegative spatial weights
+masked_statistics_pipeline,mathtext_fontset,dejavusans
+masked_statistics_pipeline,matplotlib_version,3.10.8
+masked_statistics_pipeline,max_text_size_pt,11.5
+masked_statistics_pipeline,min_text_size_pt,10.0
+masked_statistics_pipeline,moment_acceptance,"finite d and d > epsilon; epsilon=1e-3; strict test, not additive"
+masked_statistics_pipeline,moments,"mu=a1/d; M2=a2/d; variance=max(0,M2-mu^2); std=sqrt(variance)"
+masked_statistics_pipeline,nominal_factor,"A uses converted requested grid widths, not rounded footprint; N_eq is not ESS"
+masked_statistics_pipeline,operator,"same complete prescribed S_g applied separately to x_m, x_m^(2), and original m"
+masked_statistics_pipeline,operator_choices,"per-axis kernels, widths, boundaries; geometry and prescribed stage order"
+masked_statistics_pipeline,pdf_fonttype,42
+masked_statistics_pipeline,pdf_path,pdf/masked_statistics_pipeline.pdf
+masked_statistics_pipeline,pdf_sha256,8c4c51891e473ba168fa478836b88d670a8b432554bf2bed17b364b6e95df6a0
+masked_statistics_pipeline,png_path,png/masked_statistics_pipeline.png
+masked_statistics_pipeline,png_sha256,e29db528a7e58f6376b00dab0e14771c189e25f7d164db76be261ee8f139dd55
+masked_statistics_pipeline,ps_fonttype,42
+masked_statistics_pipeline,purpose,Conceptual masked local-statistics pipeline for the selected direct-ratio validation
+masked_statistics_pipeline,python_version,3.11.13
+masked_statistics_pipeline,rejected_moments,undefined; completion and input-mask restoration disabled in selected validation
+masked_statistics_pipeline,script_sha256,9ce65d1c98e39363272665683912f5da783fcd08f164807b78b46fa49b529e0d

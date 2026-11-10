@@ -1,0 +1,34 @@
+figure,setting,value
+visual_statistics_pipeline,accepted_cells,6166
+visual_statistics_pipeline,backend,Agg
+visual_statistics_pipeline,background,"white, opaque"
+visual_statistics_pipeline,base_font_size_pt,10.0
+visual_statistics_pipeline,canvas_cropping,none (fixed figsize)
+visual_statistics_pipeline,denominator,raw filtered original mask; finite d > 0.001; no completion or mask restoration
+visual_statistics_pipeline,export_dpi,300
+visual_statistics_pipeline,figure_height_in,3.75
+visual_statistics_pipeline,figure_helper_sha256,b93d58ee7d36c707f434c529053f254b22117122da8cb1157ca1e6d14a2167a6
+visual_statistics_pipeline,figure_width_in,6.5
+visual_statistics_pipeline,font_family,"[""DejaVu Sans""]"
+visual_statistics_pipeline,historical_style_and_field,"DCT_paper2/02_arXiv_Paper/figure_outputs/generate_teaser_v13.py; seed 42, 80 x 80"
+visual_statistics_pipeline,input_rule,original validity mask; invalid data and squared data explicitly zero
+visual_statistics_pipeline,mathtext_fontset,dejavusans
+visual_statistics_pipeline,matplotlib_version,3.10.8
+visual_statistics_pipeline,max_text_size_pt,10.0
+visual_statistics_pipeline,min_text_size_pt,7.0
+visual_statistics_pipeline,operator,v1.0.0 smooth_cartesian; Gaussian width 7 grid cells; reflective on both axes
+visual_statistics_pipeline,outputs,"mean=a1/d; std=sqrt(max(0,a2/d-mean**2)); coverage=clip(d,0,1)"
+visual_statistics_pipeline,pdf_fonttype,42
+visual_statistics_pipeline,pdf_path,pdf/visual_statistics_pipeline.pdf
+visual_statistics_pipeline,pdf_sha256,c251994af9d98aec553a4ba2202b77b95dc1dc75d3a052b5e00bf1ad096e4b4c
+visual_statistics_pipeline,png_path,png/visual_statistics_pipeline.png
+visual_statistics_pipeline,png_sha256,0429b7208350fb9a62dbd49858349ab122e5c98e5a0d889bac4edce17d8072fc
+visual_statistics_pipeline,ps_fonttype,42
+visual_statistics_pipeline,purpose,Illustrative direct normalized statistics on a synthetic 2D Cartesian field
+visual_statistics_pipeline,python_version,3.11.13
+visual_statistics_pipeline,script_sha256,508f6933fc9728c773c40ab93862944f502c009406faefc7d1ee664c372b6023
+visual_statistics_pipeline,spectrum,log10 magnitude of DCT-II of zero-filled data; displayed first 45 frequencies per axis
+visual_statistics_pipeline,toolkit_commit,9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c
+visual_statistics_pipeline,toolkit_version,1.0.0
+visual_statistics_pipeline,undefined_cells,234
+visual_statistics_pipeline,visualization,"same central [26:54,26:54] crop; gray missing or undefined; std colorbar extended at 98th percentile"

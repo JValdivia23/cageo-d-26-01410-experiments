@@ -1,0 +1,776 @@
+%%
+%% Computers & Geosciences submission manuscript (cas-sc).
+%% Body ported from 02_arXiv_Paper/main.tex (arXiv:2604.22721).
+%%
+%% Class/style: local Elsevier CAS bundle v2.4 (2024/05/04)
+%%   ./cas-sc.cls, ./cas-common.sty, ./cas-model2-names.bst
+%% Full vendor snapshot: ../els-cas-templates/
+%% CAGEO journal checklist reference: ../CAGEO_LaTeXTemplate/
+%%
+%% cas-sc already loads: graphicx, amsmath/amssymb/amsfonts, booktabs, hyperref (url).
+%%%%%%%%%%%%%%%%%%%%%%%%%%%% SUBMISSION CHECKLIST %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% _ Highlights
+%% _ Authorship statement (CRediT via \credit + \printcredits)
+%% _ Single column and double spaced
+%% _ Author-date references
+%% _ Code availability section
+%% Cover letter: prepare separately for Editorial Manager if required.
+%% * Manuscripts that do not meet journal guidelines may be desk-rejected.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass[a4paper,fleqn]{cas-sc}
+
+\usepackage[authoryear,sort&compress]{natbib}
+\usepackage{setspace}
+\usepackage{lineno}
+\usepackage{placeins} % Targeted barriers at workload transitions.
+\linenumbers
+
+% Formal math notation (vectors bold italic; matrices/arrays bold roman)
+\newcommand{\vect}[1]{\boldsymbol{#1}}  % physical/algebraic vectors
+\newcommand{\mat}[1]{\mathbf{#1}}       % matrices / 2-D array operands
+
+\begin{document}
+\let\WriteBookmarks\relax
+\def\floatpagepagefraction{1}
+\def\textpagefraction{.001}
+
+\shorttitle{Spectral-Domain Local Statistics}
+\shortauthors{Valdivia et al.}
+
+\title[mode = title]{Spectral-Domain Local Statistics with Missing-Data Support for Cartesian and Polar Grids}
+\tnotemark[1]
+\tnotetext[1]{A preprint of this manuscript is available as arXiv:2604.22721.}
+
+\author[1]{Jairo M. Valdivia}[orcid=0000-0003-0709-1163]
+\cormark[1]
+\ead{jairo.valdiviaprado@colorado.edu}
+\credit{Conceptualization, Methodology, Software, Validation, Formal analysis, Writing -- original draft}
+
+\author[1]{William E. Chapman}[orcid=0000-0002-0472-7069]
+\ead{william.chapman@colorado.edu}
+\credit{Methodology, Writing -- review \& editing}
+
+\author[1]{Katja Friedrich}[orcid=0000-0001-8417-4232]
+\ead{katja.friedrich@colorado.edu}
+\credit{Supervision, Writing -- review \& editing}
+
+\affiliation[1]{organization={Department of Atmospheric and Oceanic Sciences, University of Colorado Boulder},
+            city={Boulder},
+            state={CO},
+            country={USA}}
+
+\cortext[1]{Corresponding author}
+
+\begin{abstract}
+We present an integrated spectral method for computing local mean, variance, and standard deviation on Cartesian and polar grids with missing data. The method combines discrete cosine and fast Fourier transforms with missing-data normalization, allowing the kernel, width, and reflective or periodic boundary condition to be selected independently for each axis. For polar grids, range-dependent angular filter widths are incorporated directly into the spectral calculation, avoiding explicit spatial-convolution loops over individual range gates. Tests with incomplete one-dimensional signals, two-dimensional radar observations, and three-dimensional Cartesian wind fields show close numerical agreement with weight- and boundary-matched reference calculations. On the tested radar sweep, prepared spectral computation of all three statistics was approximately 16 and 49 times faster than equivalent NumPy and SciPy range-adaptive full-support convolution loops, respectively. For three-dimensional Cartesian grids, prepared spectral computation of all three statistics was up to 50 times faster than NumPy window reductions, 44 times faster than Astropy direct convolution, and six times faster than Astropy FFT convolution, with the largest gains for wider windows. This framework was implemented in the Python library \texttt{dct\_toolkit}.
+\end{abstract}
+
+%% Legacy graphical abstract omitted: mislabeled mask response and obsolete denominator normalization.
+
+%% Highlights: Elsevier requires a separate editable file for EM upload
+%% (see highlights.txt). Do not embed a highlights environment here.
+
+\begin{keywords}
+spectral filtering \sep normalized convolution \sep boundary conditions \sep local statistics \sep missing data \sep polar coordinates
+\end{keywords}
+
+\maketitle
+
+\doublespacing
+
+%% ========================================================================
+\section{Introduction}
+\label{sec:introduction}
+
+Large gridded datasets in meteorology, radar remote sensing, Earth observation, and related scientific imaging workflows
+routinely contain missing or invalid values due to cloud contamination, quality-control masking, beam blockage, clutter
+filtering, and acquisition geometry  \citep{JuRoy2008,Shen2015,Hubbert2009Part1}.
+In these workflows, local mean, variance, and standard deviation are foundational
+diagnostics for smoothing and quality control, but their calculation must distinguish missing values from measured zeros and account for the available data in each neighborhood.
+
+Local statistics can be computed using convolution, which combines neighboring values according to weights defined by a kernel. The kernel’s shape and width determine how observations contribute to the calculation. When data are missing, normalized convolution accounts for the available observations by filtering the data and a validity mask separately, then dividing the filtered data by the filtered mask \citep{Knutsson1993,Westin1994,Pham2006}. In scientific software, this approach appears as mask-weighted convolution with normalization over the available data \citep{Astropy2022}.
+Convolution can be performed directly in the spatial domain or using spectral transforms. For $N$ grid cells and a kernel with $K$ entries, generic direct convolution requires $\mathcal{O}(NK)$ operations, whereas applying a prepared fast-transform filter typically requires $\mathcal{O}(N\log N)$ operations \citep{Cooley1965,Oppenheim1999,Nussbaumer1982}. This makes spectral filtering attractive for wide kernels, although specialized spatial algorithms can be faster for some kernels and implementations \citep{Smith1997}. Near the edges of a grid, a kernel can extend beyond the available data, so the calculation must specify how to treat the boundary. In the spatial domain, one option is to truncate the window at the edge and normalize using only the values inside the grid. Other choices extend the data beyond the grid. Periodic boundaries treat opposite edges as neighbors, while reflective boundaries mirror values at the edges. In spectral convolution, the transform and any padding determine the boundary treatment. The discrete cosine transform (DCT) \citep{Ahmed1974,Makhoul1980} provides a spectral approach compatible with reflective boundaries \citep{Strang1999,Ng1999,Martucci1994}. In contrast, FFT-based convolution without appropriate padding imposes periodic boundaries.
+
+The appropriate kernel width and boundary treatment also depend on grid geometry. In radar data, the distance between adjacent rays increases with range, so a fixed angular window covers a changing physical width \citep{Bringi2001,Fabry2015}. \citet{Valdivia2026RadarDCT} developed a spectral method for radar smoothing with range-dependent angular widths. In their radar application, missing values were filled by interpolation before smoothing, and the filled values contributed to the result. Calculating local mean and variability directly from available observations therefore requires missing-data handling to work together with the boundary conditions and range-dependent polar filter. More generally, an integrated method is needed to calculate these statistics on incomplete N-dimensional Cartesian and polar grids.
+
+We present a spectral framework for calculating local mean, variance, and standard deviation on Cartesian and polar grids with missing data. By combining the polar filtering approach with normalized convolution, the framework calculates these statistics directly from the available observations without first filling missing values. The user can choose the kernel, width, and reflective or periodic boundary independently for each filtered axis. The framework also supports regular polar arrays with additional axes, such as time or elevation, and is implemented in the Python library \texttt{dct\_toolkit}. We evaluate the framework using one-dimensional signals, a real two-dimensional radar sweep, and a synthetic three-dimensional Cartesian wind field. Figure~\ref{fig:statistics_pipeline} summarizes the direct calculation used in the validation.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{figures/round1/visual_pipeline/pdf/visual_statistics_pipeline.pdf}
+	\caption{Direct local statistics illustrated on an incomplete synthetic two-dimensional Cartesian field. Gray marks missing inputs and undefined estimates. The spectrum is that of the zero-filled input; the Gaussian spectral filter uses reflective boundaries on both axes. The same filter is applied to the valid data, their squares, and the original validity mask. The filtered mask normalizes the moments and gives local data coverage $\rho$. The enlarged panels show the yellow-box region. Input and mean colors use the input's 1st--99th percentile range; the standard-deviation scale saturates above its upper limit. Moment estimates are undefined where the filtered mask is nonfinite or at most $10^{-3}$; default completion is not used. Section~\ref{sec:nc_statistics} defines the quantities and their interpretation.}
+	\label{fig:statistics_pipeline}
+\end{figure}
+
+Section~\ref{sec:convolution_theorem} defines filters and geometry, and Section~\ref{sec:nc_statistics} formulates local statistics. Section~\ref{sec:software_implementation} describes the software implementation, Section~\ref{sec:validation} presents numerical evaluation and applications, and Section~\ref{sec:performance} reports computational measurements. Sections~\ref{sec:discussion} and \ref{sec:conclusion} discuss limitations and conclude.
+
+\FloatBarrier
+%% ========================================================================
+\section{Spectral methods for Cartesian and polar grids}
+\label{sec:convolution_theorem}
+
+In this paper, a filter is an operation that combines values along one
+or more grid axes according to specified spectral responses and
+boundary conditions. An individual filtering stage can have a
+convolution interpretation. A complete filter may combine several
+stages in a prescribed order, as in the range-dependent polar method.
+
+\subsection{Grids and notation}
+\label{sec:notation}
+
+Let \(x\) be an observed field on a regular \(D\)-dimensional tensor grid, with multi-index \(\mathbf{i}=(i_1,\ldots,i_D)\) and axis lengths \(N_a\), where \(i_a=0,\ldots,N_a-1\). The binary validity mask \(m(\mathbf{i})\) is one for finite observations retained as valid and zero for missing or excluded observations. Missing-value markers and observations excluded by instrument flags or other quality-control criteria have \(m(\mathbf{i})=0\). Define \(x_m\) and \(x_m^{(2)}\) by copying valid values of \(x\) and \(x^2\), respectively, and replacing invalid entries with zero. Invalid values are replaced explicitly by zero rather than multiplied by the mask; valid values and their squares must be representable as finite inputs.
+
+The filter can be applied along some or all axes of the grid. We denote the set of selected axes by \(\mathcal F\); data slices indexed by the remaining axes are processed independently. For each selected axis \(a\), the operator \(K_a\) filters the field along that axis using its specified kernel response, width, and boundary condition. The complete filter \(\mathcal S_g\) combines the selected axis filters. For fixed geometry, kernel choices and widths, and boundary conditions, \(\mathcal S_g\) is linear. Section~\ref{sec:nc_statistics} applies the same complete filter to \(x_m\), \(x_m^{(2)}\), and \(m\) before normalizing the moments.
+
+The kernel specification $g$ selects Gaussian, analytical boxcar, or odd discrete boxcar independently on each filtered axis. Widths $W_a$ are finite, positive, and expressed in grid cells; the polar conversions below may make them depend on range or elevation, but not on position along the line being filtered. A reflective or periodic boundary condition is prescribed for each filtered axis. Table~\ref{tab:notation} summarizes the filtering symbols and local-statistics quantities used subsequently.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Summary of notation.}
+	\label{tab:notation}
+	\begin{tabular}{@{}p{0.26\linewidth}p{0.68\linewidth}@{}}
+		\toprule
+		Symbol                   & Meaning                                                    \\
+		\midrule
+		$x$, $m$ & observed field and binary validity mask \\
+		$\mathbf{i}$, $D$ & grid multi-index and number of array dimensions \\
+		$x_m$, $x_m^{(2)}$ & valid data and squared data, zero-filled at invalid positions \\
+		$\mathcal{F}$, $a$, $N_a$ & filtered-axis set, axis index, and axis length \\
+		$k_a$, $\omega_{a,k_a}$ & represented frequency index and angular frequency in radians per grid cell \\
+		$g$, $H_{g,a}$ & kernel specification and axis-wise spectral response \\
+		$W_a$, $M_a$, $\sigma_{g,a}$ & converted grid width, odd discrete width, and Gaussian bandwidth \\
+		$K_a$, $\mathcal{S}_g$ & one filtering stage and the complete smoothing operator \\
+		$R_j$, $\theta$, $\phi$, $\eta$ & actual range, angular coordinate, azimuth, and elevation \\
+		$L_a$, $\Delta_a$ & requested physical width and coordinate spacing on axis $a$ \\
+		$d$, $\rho$ & raw mask response $\mathcal{S}_g\{m\}$ and local data coverage \\
+		$\mu$, $M_2$ & normalized first and second raw moments \\
+		$\sigma^2$, $\sigma$ & reported local variance and standard deviation \\
+		$N_{\mathrm{eq}}$, $A$ & equivalent data count $A\rho$ and nominal grid-unit window factor \\
+		$\epsilon$, $\bar{x}$ & denominator threshold (default $10^{-3}$) and completed first-moment field \\
+		$\vect{v}$ & wind vector field with components $u,v,w$ \\
+		$\mat{X}$, $\mat{Y}$ & polar input and filtered-output arrays \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+%% Font convention (not printed): vectors bold italic via \vect; matrices/2-D
+%% arrays bold roman via \mat; multi-index \mathbf{i}; scalars and 1-D H_g[k] italic.
+
+\subsection{Boundary-dependent axis filters}
+
+For a finite input field $f$, filtering along axis $a\in\mathcal{F}$ takes the form
+\begin{equation}
+	K_a\{f\} = \mathcal{T}_a^{-1}\!\left\{\mathcal{T}_a\{f\} \odot H_{g,a}\right\},
+	\label{eq:smooth_operator}
+\end{equation}
+Here, \(\mathcal T_a\) and \(\mathcal T_a^{-1}\) are the forward and inverse transforms along axis \(a\), \(H_{g,a}\) is the selected kernel's spectral response, and \(\odot\) denotes element-wise multiplication. The response is evaluated using the local converted width and is shared along axes on which it does not vary. The transform pair is DCT-II/IDCT-II for reflective boundary conditions or RFFT/IRFFT for periodic boundary conditions, with orthonormal normalization and inverse output length \(N_a\). Spectral multiplication implements the specified boundary-dependent filter, not an unrestricted convolution identity for arbitrary DCT arrays \citep{Oppenheim1999,Strang1999,Martucci1994}.
+
+The boundary model is chosen before filtering from the acquisition geometry and the intended treatment of the domain edges. Under periodic boundary conditions, the two ends of an array are treated as neighbors, as in a complete circular radar sweep with no repeated endpoint. A sector's endpoints are not adjacent; reflective azimuth is one available non-periodic model. Under reflective boundary conditions, values beyond the array are mirrored at its edges. This is a prescribed boundary model, not an estimate of the physical field outside the domain. Internal invalid cells instead have $m=0$ and do not create new reflective interfaces. Observations on either side of a gap can contribute to the same estimate through the prescribed operator. Thus the validity mask excludes observations but does not impose an impermeable physical barrier or automatically partition the domain.
+
+For an orthonormal DCT-II matrix $\mat{C}_a$, the matrix representation of a reflective filtering stage on a fixed line is
+\begin{equation}
+	\mat{K}_a=\mat{C}_a^{\mathsf{T}}\operatorname{diag}(H_{g,a})\mat{C}_a.
+	\label{eq:boundary_operator}
+\end{equation}
+Here $H_{g,a}$ supplies the filter eigenvalues, not generally the ordinary DCT of sampled kernel values. For a centered symmetric discrete kernel, its cosine response gives convolution under half-sample even extension about the outer cell faces, consistent with the discrete Neumann model \citep{Strang1999,Ng1999,Martucci1994}. The RFFT branch instead implements circular filtering. Table~\ref{tab:frequency_vars} specifies the angular frequencies and represented indices for both modes.
+
+The analytical boxcar response follows Eq.~(7) of \citet{Valdivia2026RadarDCT}, the discrete boxcar response follows their Eq.~(5), and the Gaussian response follows their Eq.~(18). Here we use the boundary-dependent frequency conventions in Table~\ref{tab:frequency_vars} to write the responses for a local grid width $W_a>0$ as
+
+\begin{align}
+	H_{\mathrm{box},a}[k_a] & = \frac{\sin(W_a\omega_{a,k_a}/2)}{W_a\sin(\omega_{a,k_a}/2)}, \label{eq:tf_boxcar_analytical} \\*
+	H_{\mathrm{dis},a}[k_a] & = \frac{1}{M_a}\left(1+2\sum_{\ell=1}^{(M_a-1)/2}\cos(\ell\omega_{a,k_a})\right), \label{eq:tf_boxcar_discrete} \\*
+	H_{\mathrm{gauss},a}[k_a] & = \exp\!\left[-\frac{1}{2}(\omega_{a,k_a}\sigma_{g,a})^2\right], \qquad \sigma_{g,a}=\frac{W_a}{\sqrt{12}}. \label{eq:tf_gaussian}
+\end{align}
+The analytical-boxcar value at $k_a=0$ is its limit, one. The discrete boxcar uses an odd positive integer width $M_a$; for odd integer $W_a=M_a$, Eqs.~\ref{eq:tf_boxcar_analytical} and \ref{eq:tf_boxcar_discrete} coincide. At other widths, including even integers and fractional values, the analytical response defines a spectral filter rather than an exact centered discrete boxcar. For the analytical boxcar response, widths below one grid cell ($0<W_a<1$) amplify nonzero frequencies rather than smooth them. The Gaussian bandwidth $\sigma_{g,a}$ is distinct from the local data standard deviation $\sigma$; its width mapping matches the variance of a continuous boxcar, not necessarily that of a rounded discrete window \citep{Smith1997,Valdivia2026RadarDCT}. Section~\ref{sec:filter_implementation} specifies how the implementation selects $M_a$ from $W_a$.
+
+All responses satisfy $H_{g,a}[0]=1$ and therefore preserve constants. The Gaussian response decreases monotonically with frequency magnitude, whereas boxcar responses can have oscillatory sidelobes. The odd discrete boxcar is a nonnegative average under the chosen extension, but analytical boxcars at other widths and finite-grid spectral Gaussian filters can have signed spatial weights. Neither constant preservation nor a nonnegative spectrum alone guarantees nonnegative spatial weights. These distinctions also apply to the complete filter and its normalized statistics.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Frequency conventions for every response in Eqs.~\ref{eq:tf_boxcar_analytical}--\ref{eq:tf_gaussian}. Here $N_a$ is the length of the filtered axis.}
+	\label{tab:frequency_vars}
+	\begin{tabular}{lccc}
+		\toprule
+		Boundary & $\omega_{a,k_a}$ & Represented $k_a$ & Transform \\
+		\midrule
+		Reflective & $\pi k_a/N_a$ & $0,\ldots,N_a-1$ & DCT-II (ortho) \\
+		Periodic & $2\pi k_a/N_a$ & $0,\ldots,\lfloor N_a/2\rfloor$ & RFFT (ortho) \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\subsection{Cartesian coordinates}
+
+On a Cartesian grid, suppose the filter response along each selected axis is fixed across the other coordinates. The axis filters then commute, so their order does not change the complete filter. In the joint transform domain, their responses combine as
+\begin{equation}
+	H_D[k_1,\ldots,k_D] = \prod_{a\in\mathcal{F}} H_{g,a}[k_a].
+	\label{eq:nd_separable}
+\end{equation}
+The inverse joint transform of the transformed input multiplied by $H_D$ gives the complete filtered field. Section~\ref{sec:nc_statistics} applies this same filter to the zero-filled observations, their squares, and the validity mask before calculating the normalized moments. Kernel families, widths, and boundary conditions can differ among the filtered axes; a separable filter need not be isotropic. On a uniformly spaced Cartesian axis, a physical width $L_a$ corresponds to $W_a=L_a/\Delta_a$ grid cells, where $\Delta_a$ is the coordinate spacing. The coordinate-independent responses required for Eq.~\ref{eq:nd_separable} do not generally hold for the polar composition below. The corresponding toolkit interfaces are summarized in Section~\ref{sec:filter_implementation}.
+
+\subsection{Polar coordinates}
+\label{sec:polar}
+
+For a two-dimensional angle--range grid, \citet[Sect.~2.3, Eqs.~(12)--(17)]{Valdivia2026RadarDCT} describe filtering first along the angular coordinate and then along range. Let $\theta$ be the angular coordinate, representing either azimuth or elevation, and let the array shape be $(N_\theta,N_R)$. Let $\Delta_\theta$ be the uniform angular spacing in radians, $R_0$ the range of the first gate, and $\Delta_R$ the uniform range-gate spacing. The range at gate $j=0,\ldots,N_R-1$ is $R_j=R_0+j\Delta_R$.
+
+For a requested physical width $L_\theta$ along the angular direction, the corresponding width in angular bins at range $R_j$ is
+\begin{equation}
+	W_{\theta,\mathrm{grid}}(R_j)=\frac{L_\theta}{R_j\Delta_\theta}, \qquad R_j>0,
+	\label{eq:polar_width}
+\end{equation}
+while a physical range width gives $W_{\mathrm{range}}=L_{\mathrm{range}}/\Delta_R$ gates. This two-dimensional conversion uses $R_j\Delta_\theta$ for the spacing along the angular coordinate. When an elevation axis is also present, the azimuth conversion includes an elevation-dependent factor, as described below.
+
+The angular stage applies a spectral response whose width varies with range:
+\begin{equation}
+	\mat{Y}_{\theta} = K_\theta\{\mat{X}\}=\mathcal{T}_{\theta}^{-1}\!\left\{\mathcal{T}_{\theta}\{\mat{X}\}\odot \mat{H}_{\theta}\right\}.
+	\label{eq:polar_stage1}
+\end{equation}
+Each column of $\mat{H}_\theta$ uses that gate's width and the angular-axis frequencies from Table~\ref{tab:frequency_vars}, with $N_a=N_\theta$. Its shape is $(N_\theta,N_R)$ for reflective DCT-II or $(\lfloor N_\theta/2\rfloor+1,N_R)$ for periodic RFFT. After returning to the spatial domain, the range stage uses a shared reflective response $H_R$:
+\begin{equation}
+	\mat{Y} = K_R\{\mat{Y}_{\theta}\}=\mathrm{IDCT}_R\!\left\{\mathrm{DCT}_R\{\mat{Y}_{\theta}\}\odot H_R\right\}.
+	\label{eq:polar_stage2}
+\end{equation}
+Angular smoothing is performed first so that each range gate is filtered using its own range-dependent angular width. For the physical widths in Eq.~\ref{eq:polar_width}, that width corresponds to the gate's distance from the origin. The range filter then combines the angularly smoothed values from the gates, using the same range response $H_R$ at each angular position. This order preserves the prescribed angular scale of each gate's contribution. The complete operator is $\mathcal{S}_g=K_R\circ K_\theta$; because the angular response varies with range, the stages generally do not commute. The resulting filter is linear and constant-preserving, but is not a single stationary separable 2D convolution. Table~\ref{tab:boundary_modes} gives example boundary interpretations; reflective range is the choice in this construction, not a restriction on all supported filters.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Example boundary conditions for two-dimensional angle--range filtering. Reflective range boundaries are used in the construction above; periodic range boundaries can also be prescribed. Boundary modes are prescribed, not inferred from the mask.}
+	\label{tab:boundary_modes}
+	\begin{tabular}{@{}lllp{0.43\linewidth}@{}}
+		\toprule
+		Axis    & Option     & Transform & Appropriate for                 \\
+		\midrule
+		Angle   & Reflective & DCT-II    & Angular sector with even endpoint extension \\
+		Angle   & Periodic   & RFFT      & Complete circular domain, such as full azimuth, without a repeated endpoint \\
+		Range   & Reflective & DCT-II    & Non-periodic range limits used here \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+The construction extends to regular N-D arrays with additional axes, such as elevation or time. For an ordered list of selected axes $(a_1,\ldots,a_q)$, the complete filter is
+\begin{equation}
+	\mathcal{S}_g=K_{a_q}\circ\cdots\circ K_{a_1}.
+	\label{eq:nd_polar_operator}
+\end{equation}
+Axes not selected for filtering index independent domains. An empty selection gives the identity operator. The axis order used in the implementation is specified in Section~\ref{sec:filter_implementation}.
+
+Physical widths on range, time, and linear axes are divided by their coordinate spacings. With elevation $\eta$, the angular conversions are
+\begin{equation}
+	W_{\mathrm{az,grid}}(R,\eta)=\frac{L_{\mathrm{az}}}{R\cos\eta\,\Delta_\phi}, \qquad
+	W_{\mathrm{el,grid}}(R)=\frac{L_{\mathrm{el}}}{R\Delta_\eta}.
+	\label{eq:nd_polar_widths}
+\end{equation}
+The requested widths $L_{\mathrm{az}}$ and $L_{\mathrm{el}}$ are physical distances in the same units as $R$, while $\Delta_\phi$ and $\Delta_\eta$ are angular spacings in radians. The converted widths vary with range; the azimuth width also varies with elevation through $\cos\eta$. These physical conversions require $R>0$, and the azimuth conversion additionally requires $\cos\eta>0$. For a complete circular azimuth grid without a repeated endpoint, $N_\phi\Delta_\phi=2\pi$. A width specified directly in grid cells does not require a physical-coordinate conversion.
+
+The conversions define local coordinate-line scales, not an isotropic Cartesian or geodesic convolution or a cell-volume-weighted average. They support regular named-axis tensor grids, not arbitrary irregular acquisitions or general hyperspherical coordinates.
+
+The nominal grid-unit window factor for the two-dimensional operator is
+\begin{equation}
+	A_{\mathrm{polar}}(j)=W_{\mathrm{range}}\,W_{\theta,\mathrm{grid}}(j),
+	\label{eq:area_polar}
+\end{equation}
+and more generally $A(\mathbf{i})=\prod_{a\in\mathcal{F}}W_a(\mathbf{i})$, using converted requested widths before discrete-boxcar rounding, not the rounded widths $M_a$. Unfiltered axes contribute no factor. This factor scales the local data coverage in the equivalent data count $N_{\mathrm{eq}}=A\rho$; $A$ is a nominal grid-unit factor, not a physical footprint. The implementation's singleton-axis conventions are given in Section~\ref{sec:filter_implementation}.
+
+The ordered operator in Eq.~\ref{eq:nd_polar_operator} specifies the complete filter used by the statistics in the next section. It acts on each moment input and the mask before a single normalization; normalizing after individual stages generally changes the weights.
+
+%% ========================================================================
+\section{Local statistics with missing observations}
+\label{sec:nc_statistics}
+
+Normalized convolution accounts for missing observations by filtering the valid data and their validity mask separately, then normalizing the filtered data by the filtered mask \citep{Knutsson1993,Westin1994,Pham2006}. Here we apply the same complete filter $\mathcal{S}_g$ from Section~\ref{sec:convolution_theorem} to the zero-filled observations, their squares, and the original mask. The resulting normalized first and second moments provide the local mean and reported variance, while the filtered mask also supports diagnostics of data availability. The following subsections describe these quantities and their interpretation; Section~\ref{sec:statistics_implementation} describes the toolkit's treatment of insufficient mask response.
+
+\subsection{Weighted local moments}
+
+Let $d(\mathbf{i})=\mathcal{S}_g\{m\}(\mathbf{i})$ be the raw mask response. For a chosen nonnegative threshold $\epsilon$, the direct-ratio calculation accepts only finite $d>\epsilon$ and defines the local mean as
+\begin{equation}
+	\mu(\mathbf{i}) = \frac{\mathcal{S}_g\{x_m\}(\mathbf{i})}{d(\mathbf{i})}.
+	\label{eq:mean}
+\end{equation}
+The threshold is a strict acceptance test, not an additive term in the denominator. For the reflective Cartesian operator, Eq.~\ref{eq:mean} becomes
+\begin{equation}
+	\mu(\mathbf{i}) = \frac{\mathrm{IDCT}_D\!\left\{\mathrm{DCT}_D\{x_m\}\odot H_D\right\}(\mathbf{i})}{\mathrm{IDCT}_D\!\left\{\mathrm{DCT}_D\{m\}\odot H_D\right\}(\mathbf{i})}.
+	\label{eq:mean_explicit}
+\end{equation}
+
+The second raw moment $M_2$ uses the same complete filter and denominator. The reported variance and standard deviation are obtained from the moment difference, clamped from below:
+\begin{align}
+	M_2(\mathbf{i}) & = \frac{\mathcal{S}_g\{x_m^{(2)}\}(\mathbf{i})}{d(\mathbf{i})}, \label{eq:second_moment} \\
+	\sigma^2(\mathbf{i}) & = \max\!\left(0,\,M_2(\mathbf{i})-\mu(\mathbf{i})^2\right), \label{eq:var_clamped} \\
+	\sigma(\mathbf{i})   & = \sqrt{\sigma^2(\mathbf{i})}. \label{eq:std}
+\end{align}
+
+Write the complete filter as $\mathcal{S}_g\{f\}(\mathbf{i})=\sum_j w_{\mathbf{i}j}f(j)$, where $j$ indexes distinct original observations and $w_{\mathbf{i}j}$ includes all repeated boundary contributions from observation $j$. On the direct-ratio path, nonnegative weights and positive $d$ give normalized valid weights $w_{\mathbf{i}j}m_j/d$ summing to one. The mean is then bounded by the contributing observations, and the raw difference $M_2-\mu^2$ is their nonnegative weighted population variance in exact arithmetic. These are descriptive moments, without a Bessel correction or an unconditional unbiasedness guarantee. Separately completed first- and second-moment fields also lack these direct-ratio guarantees.
+
+This difference can be negative because of floating-point error or because the filter has signed spatial weights. In particular, the finite-grid spatial weights of the spectral Gaussian filter can be negative, so the difference is not guaranteed to be nonnegative even in exact arithmetic. Equation~\ref{eq:var_clamped} reports negative values as zero so that a real-valued standard deviation can be calculated. This reporting rule does not make a signed-weight result a conventional weighted variance; a reported zero therefore does not necessarily indicate that the contributing observations have no variability.
+
+\subsection{Local data coverage and equivalent data count}
+
+For nonnegative, constant-preserving spatial weights, the mask response is
+\[
+ d(\mathbf{i})=\sum_j w_{\mathbf{i}j}m_j,
+ \qquad w_{\mathbf{i}j}\geq 0,
+ \qquad \sum_j w_{\mathbf{i}j}=1.
+\]
+Because $m_j$ is either zero or one, $d(\mathbf{i})\in[0,1]$ is the weighted fraction of available observations. In this case, local data coverage $\rho$ equals $d$. For the equivalent data count, the nominal window factor is
+\[
+ A(\mathbf{i})=\prod_{a\in\mathcal{F}}W_a(\mathbf{i}),
+\]
+the product of the requested widths expressed in grid cells along the filtered axes, before discrete-boxcar rounding. Unfiltered axes contribute no factor, and $A$ can vary with position when widths do. The singleton-axis conventions are given in Section~\ref{sec:filter_implementation}. This nominal factor is not necessarily the number of cells in a window. The equivalent data count $N_{\mathrm{eq}}$ scales coverage by $A$:
+\begin{equation}
+	N_{\mathrm{eq}}(\mathbf{i})=A(\mathbf{i})\rho(\mathbf{i}).
+	\label{eq:neff}
+\end{equation}
+Signed weights can instead place $d$ outside $[0,1]$. The implementation bounds $d$ when reporting $\rho$, as specified in Section~\ref{sec:statistics_implementation}; this yields a bounded diagnostic, not necessarily a fraction or a measure of confidence. Moment normalization always uses raw $d$, and both diagnostics refer to the original mask rather than a mask enlarged by completion.
+
+For a uniform discrete boxcar, $N_{\mathrm{eq}}$ equals the valid-cell count when $A$ matches the actual footprint size $\prod_{a\in\mathcal{F}}M_a$ and boundary extension does not repeat any original observation. In general, including Gaussian weighting and range-dependent polar composition, $N_{\mathrm{eq}}$ is only the bounded mask response expressed on this nominal-width scale, not a count of distinct or independent observations.
+
+Statistical effective sample size is a different quantity. For a direct-ratio mean with nonnegative weights, fixed mask and weights, and independent observations of equal variance, the squared-weight effective sample size is
+\begin{equation}
+	N_{\mathrm{ESS}}(\mathbf{i})=\frac{\left(\sum_j w_{\mathbf{i}j}m_j\right)^2}{\sum_j\left(w_{\mathbf{i}j}m_j\right)^2}.
+	\label{eq:weight_ess}
+\end{equation}
+The weights in Eq.~\ref{eq:weight_ess} must aggregate repeated reflected or wrapped contributions from each distinct original observation before squaring, as in the filter representation above. This quantity generally differs from $A\rho$. Spatial correlation invalidates the independent-observation variance interpretation; neither diagnostic by itself quantifies uncertainty in a geophysical field.
+
+%% ========================================================================
+\section{Software implementation}
+\label{sec:software_implementation}
+
+The filtering and local-statistics methods described in Sections~\ref{sec:convolution_theorem} and \ref{sec:nc_statistics} are implemented in the Python library \texttt{dct\_toolkit} for Cartesian and polar grids with missing observations. The user specifies a kernel family, a width, and a boundary condition for each filtered axis, and the library applies the complete filter jointly to the data, their squares, and the validity mask before normalizing the moments. Section~\ref{sec:filter_implementation} describes the entry points and checks, and Section~\ref{sec:statistics_implementation} describes the diagnostics and the default fallback in \texttt{dct\_toolkit} v1.0.0; Section~\ref{sec:validation} uses direct ratios with completion and restoration disabled.
+
+\subsection{Filter implementation}
+\label{sec:filter_implementation}
+
+The release offers two entry points. The reflective Cartesian backend filters all axes with an orthonormal N-D DCT-II pair and accepts widths in grid cells. Mixed reflective and periodic boundaries or a selected subset of Cartesian axes use the explicit-geometry interface with Cartesian directions assigned linear roles, in which each of the three kernel families supports either boundary condition on each filtered axis. For a discrete boxcar, the converted width $W_a$ is rounded to the nearest integer with ties to even, raised to at least one, and incremented if even to obtain the odd width $M_a$.
+
+For explicit geometry, each storage axis is assigned an azimuth, elevation, range, time, linear, or batch role, with at most one azimuth, elevation, and range axis. Coordinates, widths, kernel families, width units, and boundary modes are supplied in array order. The selected axes, specified by \texttt{filter\_axes}, are filtered in the fixed role order azimuth, elevation, range, time, then linear, irrespective of storage order; repeated time or linear roles retain array order. By default all non-batch axes are selected, batch axes cannot be selected, and unselected axes index independent domains, including during completion. Singleton axes ($N_a=1$) are identity stages with $W_a=1$.
+
+For the nominal factor $A$, unselected axes contribute no factor and explicit-geometry singleton axes contribute one. The Cartesian backend and index-based polar interface instead retain their requested-width factors even on singleton axes.
+
+Angular coordinates may be supplied in degrees or radians and are converted to radians internally. Without an elevation axis, the azimuth conversion uses a cosine factor of one. Physical and grid-unit widths may be mixed among axes, and neither is capped at the axis length.
+
+Every supplied coordinate vector must be finite and real, match its axis length, and be strictly increasing and uniformly spaced, checked to a relative tolerance of $10^{-6}$. Elevation coordinates after conversion to radians must lie within $[-\pi/2,\pi/2]$. Coordinates are required on selected nonsingleton physical axes and on any range or elevation axis needed for physical angular conversion, even when range or elevation is unfiltered or singleton.
+
+Selected nonsingleton physical angular filters require positive actual ranges; physical azimuth additionally requires $\cos\eta>10^{-12}$ when elevation is present. These checks reject singular origins and azimuthal poles rather than capping widths. For selected nonsingleton physical periodic azimuth, the interface checks $N_\phi\Delta_\phi=2\pi$ with the same $10^{-6}$ relative tolerance, excluding a repeated endpoint. Grid-unit, unselected, and singleton angular filters skip their own physical conversion and these angular checks.
+
+\subsection{Statistics and completion}
+\label{sec:statistics_implementation}
+
+For finite $d$ the toolkit reports local data coverage as defined in Section~\ref{sec:nc_statistics}:
+\[
+\rho(\mathbf{i})=
+\begin{cases}
+0, & d(\mathbf{i})<0,\\
+d(\mathbf{i}), & 0\leq d(\mathbf{i})\leq 1,\\
+1, & d(\mathbf{i})>1.
+\end{cases}
+\]
+The released \texttt{dct\_count} routine returns $A\rho$; the toolkit does not compute $N_{\mathrm{ESS}}$. Before bounding the response, it replaces nonfinite mask responses NaN, $-\infty$, and $+\infty$ by zero, zero, and one, respectively. This safeguard changes only the diagnostic, not the denominator test or moment calculation. In explicit geometry, the count routine rejects an $A$ that is not representable as a finite positive \texttt{float64}; normalized moments do not require this product.
+
+The default fallback completes rejected positions. The released v1.0.0 statistics API uses $\epsilon=10^{-3}$ by default and applies a selective prefill-and-smooth fallback at positions rejected by the denominator test:
+\begin{equation}
+	\mu(\mathbf{i})=
+	\begin{cases}
+		\dfrac{\mathcal{S}_g\{x_m\}(\mathbf{i})}{d(\mathbf{i})}, & d(\mathbf{i})\text{ finite and }>\epsilon, \\
+		\mathcal{S}_g\{\bar{x}\}(\mathbf{i}), & \text{otherwise},
+	\end{cases}
+	\label{eq:mean_stable}
+\end{equation}
+Here $\bar{x}$ is completed only from valid observations in the same filtering domain; a domain without valid observations remains NaN. The second moment follows the same rule with an independently completed field $\overline{x^2}$, using $\mathcal{S}_g\{\overline{x^2}\}$ at rejected positions, not $\mathcal{S}_g\{\bar{x}^2\}$. This fallback describes the released default behavior and was not evaluated in Section~\ref{sec:validation}. Table~\ref{tab:nc_flow} specifies this internal completion for either moment input. Requested kernels, widths, boundaries, and geometry are retained; Gaussian is used only when \texttt{kernel\_type} is omitted.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Default internal mean fallback in released v1.0.0, applied independently to $y=x$ and $y=x^2$. The original validity mask $m$ defines the targets for both completions.}
+	\label{tab:nc_flow}
+	\begin{tabular}{@{}p{0.12\linewidth}p{0.82\linewidth}@{}}
+		\toprule
+		Stage & Operation \\
+		\midrule
+		Initialize & Set $f^{(0)}=y$ where $m=1$ and NaN elsewhere. Only original invalid positions are fill targets; valid observations remain fixed within this completed input. \\
+		Propose & At iteration $t$, form the finite-value mask $b^{(t)}$ of $f^{(t)}$ and replace nonfinite values by zero to obtain $f_0^{(t)}$. Compute $h^{(t)}=\mathcal{S}_g\{b^{(t)}\}$ and $e^{(t)}=\mathcal{S}_g\{f_0^{(t)}\}/h^{(t)}$ only for finite $h^{(t)}>10^{-10}$, leaving other estimates NaN. Recursive fallback and input-mask restoration are disabled; the inner mean also sets estimates to NaN where raw $h^{(t)}<0.35$. \\
+		Accept & Simultaneously fill unresolved targets only where $e^{(t)}$ is finite and $\mathrm{clip}(h^{(t)},0,1)>0.35$. Previously accepted fills remain fixed and join the finite-value mask in subsequent iterations. \\
+		Stop & Stop when no unresolved targets remain, no finite values exist, no new fills are accepted, or three iterations have run. There is no numerical-change tolerance. \\
+		Complete & Fill residual target NaNs by the nearest-neighbor rules below. Smooth the completed $\bar{y}$ with $\mathcal{S}_g$ and replace only positions rejected by the original denominator test; unsupported domains remain NaN. \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+By default the outer \texttt{dct\_mean} call enables \texttt{\_stable\_fallback} with \texttt{\_prefill\_max\_iter} set to three, invoking \texttt{dct\_prefill} with recursive fallback disabled and density threshold 0.35. Setting \texttt{\_prefill\_max\_iter} to \texttt{None} permits up to 20 iterations with the same stopping rules; the standalone option is \texttt{max\_iter=None}. Prefill forces inner calls to \texttt{\_stable\_fallback=False} and \texttt{restore\_input\_nan=False}, giving the $10^{-10}$ threshold in Table~\ref{tab:nc_flow}.
+
+The outer \texttt{min\_effective\_density} defaults to \texttt{None} (no final gate). A positive threshold $\tau$ discards outputs with original raw $d<\tau$ after fallback; it is not forwarded to prefill and does not use the grown mask, while non-positive thresholds disable the gate. Residual nearest-neighbor fills need not pass the 0.35 gate, so returned values are not necessarily supported at that original-coverage level.
+
+Residual nearest-neighbor completion uses grid-index distances. With explicit geometry it tries the active range axis first, then the remaining active axes in canonical role order; repeated time or linear roles skip individual axis passes. A nonperiodic pass takes the nearest finite value on the line, breaking ties toward the lower index, while a periodic pass uses circular distance and favors the preceding cell on a tie. Fills from one pass seed later passes, and any residual targets use Euclidean search over all active axes, wrapping periodic axes by their length. Exact global ties average the nearest seed values simultaneously, rather than seeding one another. Inactive-axis slices stay isolated, and with no active axes nothing propagates between cells.
+
+The Cartesian backend instead tries the last array axis first, then the remaining axes in array order. The legacy polar interface tries range before azimuth and wraps only periodic azimuth. Both use the same line tie rules; any remaining targets use \texttt{scipy.ndimage.distance\_transform\_edt} and select one nearest seed rather than averaging ties. Nonperiodic searches add no reflected donors. Entirely missing domains remain NaN; with finite $A$ and restoration disabled, coverage and equivalent count are zero.
+
+By default, \texttt{restore\_input\_nan=True} restores NaNs at original invalid positions in the statistics outputs, including caller-mask exclusions. The separate \texttt{dct\_smooth} wrapper instead prefills input NaNs before smoothing the whole field and then restores their locations; it is not the selective replacement in Eq.~\ref{eq:mean_stable}.
+
+Section~\ref{sec:validation} therefore tests only direct ratios: completion and input-mask restoration are disabled, with \texttt{\_stable\allowbreak\_fallback=False}, \texttt{\_denominator\allowbreak\_floor=1e-3}, and \texttt{restore\allowbreak\_input\allowbreak\_nan=False} set explicitly. The diagnostic rules, fallback gates, and tie-breaking rules in this section describe released default behavior for reproducibility; they are not the settings used for the Section~\ref{sec:validation} numbers.
+
+%% ========================================================================
+\section{Numerical evaluation and applications}
+\label{sec:validation}
+
+\subsection{Common calculation settings}
+
+% Approved source: dct_toolkit 1.0.0, 9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c.
+We ask whether direct normalized ratios agree with independent calculations on incomplete inputs. The experiments examine numerical agreement and local statistics on incomplete grids: reflective 1D boxcars with an additional two-boundary illustration, mixed-boundary Gaussian filtering of a real 2D radar sweep, and componentwise boxcar statistics of a synthetic 3D wind field. They test these configurations, not every kernel, boundary, or N-D polar geometry supported in Section~\ref{sec:convolution_theorem}.
+
+Calculations use \texttt{float64} in an environment with \texttt{dct\_toolkit} v1.0.0 (commit \texttt{9cdf40f}), Python 3.11.13, NumPy 2.4.4, SciPy 1.17.1, and Astropy 8.0.2. The experiment scripts and per-case \texttt{settings.csv} files record input and source hashes, random streams, masks, operator settings, and numerical tolerances.
+
+The moment comparisons and benchmarks use direct ratios, applying the same complete filter to the original mask, zero-filled observations, and squared observations before normalization. Completion and input-mask restoration are disabled. Released-API comparisons set \texttt{\_stable\_fallback=False}, \texttt{\_denominator\_floor=1e-3}, and \texttt{restore\_input\_nan=False}; disabling fallback alone would otherwise select the private $10^{-10}$ threshold.
+
+Unless explicitly varied below, moments require finite raw $d>\epsilon=10^{-3}$; rejected ratios remain undefined, including in the threshold-sensitivity calculations, while coverage diagnostics remain available. There is no additive denominator term. Reported variance uses the clamped normalized-moment difference in Eq.~\ref{eq:var_clamped}; the independent 1D variance reference instead uses centered residuals. Discrepancies use jointly defined cells, but agreement also requires identical defined-output masks. A direct ratio can be defined at a missing input without invoking completion; agreement on the same incomplete input does not establish recovery of an unknown field. These comparisons neither validate nor time default completion.
+
+Output coverage is the number or fraction of cells with accepted moment estimates, distinct from local data coverage $\rho$. The latter is a filter-weight fraction only for nonnegative spatial weights; with signed weights it is a bounded diagnostic. The CSV field \texttt{support} records the equivalent data count $N_{\mathrm{eq}}$, not $\rho$ or statistical effective sample size.
+
+\subsection{One-dimensional filtering and boundary effects}
+
+We start with three controlled one-dimensional profiles. We sample three profiles at $t_i=10i/199$, $i=0,\ldots,199$: a trend with oscillation, $1.2t+2.5\sin(1.5t)$; curved endpoints, $0.20(t-5)^2+2\cos(\pi t/10)$; and an abrupt step from $-2$ to $6$ at $t=5$. Independent normal noise of standard deviation one is added to the first two profiles; the step is noiseless. For signal identifier $s=0,1,2$ and replicate $r=0,\ldots,4$, NumPy \texttt{SeedSequence} with entropy $[20261027,s,r]$ supplies separate child streams for noise and missingness, with spawn keys \texttt{(0,)} and \texttt{(1,)}, respectively. Each realization is reused across complete input, independent 20\% random removal, a middle gap at indices $[80,120)$, a boundary gap at $[0,40)$, and all-missing input, giving 75 cases. Signal amplitudes and noise are in arbitrary signal units.
+
+We first test agreement against an independent window calculation. The centered odd boxcar has width 15. For the broad 75-case numerical comparison, we prescribe half-sample reflective boundaries. An independent NumPy reference explicitly constructs symmetric windows and calculates centered population variance from valid positions. The released DCT statistics, SciPy reflective uniform filtering, and linear FFT convolution of a symmetrically extended input use the same windows and normalization. Table~\ref{tab:boxcar_1d_agreement} therefore tests matched implementation agreement only, on the same incomplete inputs. Checks cover all 200 cells, the first and last seven cells, and the originally missing positions; these regions can overlap.
+
+% Source: experiments/results/round1/1d_boxcar/lead-review-1d-20261027/.
+% comparison.csv: region=all, maxima over 15 cases per mask and all three methods.
+% coverage.csv: toolkit_dct_direct, region=all; defined counts match all methods.
+% rho extrema are clipped denominator extrema, not the stored support extrema.
+% All regions: 2,115 pass / 585 no_comparable / 0 fail (2,700 rows, 75 cases).
+
+\begin{table}[pos=hbp]
+	\centering
+	\caption{1D boxcar coverage and maximum absolute discrepancies against NumPy symmetric windows. For each mask, maxima cover all 200 cells in each of the 15 signal--replicate cases and all three nonreference implementations. Defined moment counts are per case; $\rho$ ranges use DCT mask responses over all cases and cells. Mean and standard-deviation differences have signal units; variance differences have squared signal units. A dash denotes no comparable moments.}
+	\label{tab:boxcar_1d_agreement}
+	\small
+	\begin{tabular}{@{}lrrrrr@{}}
+		\toprule
+		Input mask & Defined & $\rho$ range & $\max|\Delta\mu|$ & $\max|\Delta\sigma^2|$ & $\max|\Delta\sigma|$ \\
+		\midrule
+		Complete & 200 & $1$ & $8.88\times10^{-15}$ & $3.68\times10^{-13}$ & $1.76\times10^{-7}$ \\
+		Random removal & 200 & $0.40$--$1$ & $1.24\times10^{-14}$ & $2.62\times10^{-13}$ & $2.80\times10^{-7}$ \\
+		Middle gap & 174 & $0$--$1$ & $5.68\times10^{-14}$ & $3.98\times10^{-13}$ & $6.31\times10^{-7}$ \\
+		Boundary gap & 167 & $0$--$1$ & $4.53\times10^{-14}$ & $4.82\times10^{-13}$ & $6.19\times10^{-7}$ \\
+		All missing & 0 & $0$ & --- & --- & --- \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Table~\ref{tab:boxcar_1d_agreement} shows that implementation differences remain small despite the different missingness patterns. Random removal leaves 149--167 observations per case, but all 200 moment estimates are defined. The middle and boundary gaps instead leave 26 and 33 undefined estimates, respectively; only 14 and seven missing-input positions receive direct estimates. All-missing cases retain undefined moments and zero coverage and equivalent data count. Across all regions, the largest equivalent-count discrepancy is $1.24\times10^{-14}$ cells, and defined-output masks match, including at edges and gaps. The larger standard-deviation discrepancy, $6.31\times10^{-7}$, is consistent with square-root amplification of raw-moment cancellation near zero variance; variance is checked independently against centered residuals and differs by at most $4.82\times10^{-13}$. These are discrepancies between calculations, not denoising errors against the generating profiles.
+
+We then isolate the boundary choice on one paired example. Figure~\ref{fig:boxcar_missingness} illustrates boundary assumptions for one realization, reported separately from the matched agreement in Table~\ref{tab:boxcar_1d_agreement}. It compares reflective and periodic boundary assumptions with a truncated-window NumPy baseline, using the trend-plus-sine realization with $r=0$, first complete and then with the middle gap. Each centered NumPy window is clipped to the input domain; its mean and centered population variance are normalized by the number of finite observations retained. Boundary outputs are retained, but their windows are shorter: no zero padding, reflected copies, or wrap-around samples are used. Coverage is the finite fraction of the available in-domain window. The known clean signal, noisy observations, and three means are shown with endpoint zooms; the gapped-input standard deviation and coverage complete the illustration. Local standard deviation includes signal variation as well as noise, not uncertainty in the mean. The matched reflective checks are in Table~\ref{tab:boxcar_1d_agreement}, and the periodic implementation is independently checked against wrapped NumPy windows.
+
+Away from the outer edges, the three treatments use identical observations and weights. We compare both spectral results with the truncated NumPy baseline at indices $[7,193)$, where a full width-15 window lies inside the domain: 186 defined means for complete input and 160 for the gapped input, with its 26 undefined positions retained in the coverage accounting. Across both inputs and spectral methods, maximum mean, variance, and coverage discrepancies are $3.51\times10^{-14}$, $3.13\times10^{-13}$, and $4.44\times10^{-16}$, respectively. These are floating-point differences, not boundary-model effects. The complete-input standard-deviation discrepancy is at most $5.98\times10^{-14}$. With the gap, it reaches $5.59\times10^{-7}$ in a one-observation window whose NumPy variance is zero; taking a square root amplifies the small raw-moment variance difference. Thus not every standard-deviation difference is of machine-epsilon size, even in the interior.
+
+For this single complete-input realization, whole-domain truth RMSE is $0.238$ with reflective boundary conditions, $1.118$ with periodic boundary conditions, and $0.253$ with truncated NumPy windows. Over the first and last seven cells together, the corresponding RMSEs are $0.370$, $4.147$, and $0.491$, in signal units. These differences illustrate boundary assumptions for this nonperiodic signal, not universal superiority of reflection or of DCT over boundary-matched FFT or spatial calculations. With the middle gap, all three give truth RMSE $1.429$ at the 14 originally missing positions with defined means. This error excludes 26 unsupported positions rather than treating them as recovered values; no completion or recovery guarantee is implied.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=\linewidth]{figures/round1/1d_boundary_comparison/pdf/boxcar_boundary_comparison.pdf}
+	\caption{Width-15 boxcar boundary comparison ($N=200$, $r=0$, master seed 20261027): (a) complete observations and means; (c,e) endpoint zooms; (b) the same realization with a middle gap at $[80,120)$; (d) its population standard deviation; (f) its local data coverage. Gray points are observations; dashed black is the clean signal. Green/orange curves use periodic FFT/reflective DCT; blue dash-dot curves use truncated NumPy windows, clipped to the domain and renormalized over finite observations. The treatments agree to floating-point accuracy in full interior windows, subject to the near-zero standard-deviation qualification in the text. Gray shading marks missing inputs; curve breaks mark 26 undefined moments. Coverage uses each treatment's available weights; the three curves coincide here, with different line styles in (f). Moments require finite raw $d>10^{-3}$, without additive normalization or completion/restoration; 14 of 40 missing inputs have defined moments. Standard deviation is not uncertainty in the mean.}
+	\label{fig:boxcar_missingness}
+\end{figure}
+
+\FloatBarrier
+\subsection{Two-dimensional radar sweep}
+\label{sec:radar_application}
+
+For the real-data test we use one radar sweep. We extract zero-based sweep 12 of COW C-band radar \texttt{DBZHC} reflectivity from WINTRE-MIX on 23 February 2022 before any filtering. The azimuth--range array has $720\times1180$ cells, fixed elevation $1.9927734^\circ$, nominal azimuth spacing $0.5^\circ$, first gate center 95~m, and nominal gate spacing 74.9414~m. The acquisition-order rays cover one complete circle without a repeated endpoint. xarray decodes \texttt{\_FillValue} to NaN before \texttt{np.isfinite} constructs the mask; finite zeros would remain valid, although this sweep contains none. No additional reflectivity threshold or quality-flag exclusion is applied. The sweep contains 508,956 finite observations out of 849,600 cells (40.0946\% missing). Upstream QC, public access to this exact processed file, and redistribution permission remain unverified; the mask establishes availability, not measurement quality or the cause of particular gaps.
+
+We filter that sweep with the legacy index-based rule. The radar calculations use the legacy index-based polar interface, with azimuth $\phi$ as the angular coordinate. For azimuth spacing $\Delta_\phi$ in radians, its width at zero-based range gate $j$ is $W_{\mathrm{az,grid}}(j)=W_{\mathrm{azimuth}}/[(j+1)\Delta_\phi]$, where $W_{\mathrm{azimuth}}$ is a nominal index-unit parameter. In the notation of Section~\ref{sec:polar}, $\theta=\phi$ and $W_{\theta,\mathrm{grid}}=W_{\mathrm{az,grid}}$. This rule does not use actual gate ranges or physical distances; it starts its index radius at one, with no other special first-gate treatment. Gaussian settings $W=5$ and $W=15$ specify both the azimuth parameter $W$ and a range width of $W$ gates. Filtering is periodic in azimuth and reflective in range, with the complete azimuth-first, range-second sequence preceding each ratio. Moments are calculated on the dBZ field without conversion to linear reflectivity. The converted first-gate azimuth widths are 572.96 and 1718.87 bins; the latter exceeds one sweep at the first two gates. At the last gate they are 0.486 and 1.457 bins. Fractional widths enter the Gaussian spectral response without rounding, a minimum-one rule, or a sweep-length cap; the analytical boxcar response also accepts fractional widths, whereas discrete boxcar widths follow the rounding rule in Section~\ref{sec:filter_implementation}.
+
+We compare those results with an independent spatial calculation. An independent spatial reference derives every finite-grid weight directly from cosine sums of the analytical Gaussian response, without toolkit filters or transforms. It retains signed tails without truncation or positivity correction and applies the matched periodic and reflected weights in the same order. This full-weight calculation is an untimed numerical reference, not an ordinary sampled or truncated Gaussian baseline. Besides the natural mask, a controlled gap removes 157,019 originally observed values from rays $[270,450)$ at all ranges while retaining every natural missing location. Reference and spectral statistics use this same reduced input, not hidden truth for naturally missing bins.
+
+% Source: experiments/results/round1/2d_radar_gaussian/
+% lead-review-radar-exact-only-20261027/{comparison,support_diagnostics}.csv.
+% Default floor 1e-3 only; toolkit_v1_polar_direct; DBZHC, not self-tests.
+% One comparison row per input/width/region/statistic; median rho clips the
+% regional raw_support_median; n_- is n_negative_raw_variance before clamping.
+% Primary comparisons: 206 pass / 40 no_comparable / 0 fail, including self-tests.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Radar agreement and coverage at $\epsilon=10^{-3}$. Compared moment counts $n_c$ are out of 849,600 cells for the whole sweep, 95,760 centrally (range $\leq10$~km), 35,400 at the seam (first/last 15 rays), and 21,600 at the outer boundary (last 30 gates); regions overlap. Differences are maximum absolute values against the exact spatial reference, in dBZ for mean and dBZ$^2$ for clamped variance. Spectral diagnostics use every regional cell for median $\rho$; $n_-$ counts accepted cells with negative raw $M_2-\mu^2$, before clamping.}
+	\label{tab:radar_statistics}
+	\small
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{@{}llrrrrr@{}}
+		\toprule
+		$W$ & Region & $n_c$ & $\max|\Delta\mu|$ & $\max|\Delta\sigma^2|$ & Median $\rho$ & $n_-$ \\
+		\midrule
+		\multicolumn{7}{@{}l}{Natural mask} \\
+		5 & Whole & 617731 & $1.21\times10^{-9}$ & $1.32\times10^{-8}$ & $0.955$ & 13322 \\
+		5 & Central & 77897 & $3.25\times10^{-10}$ & $5.48\times10^{-9}$ & $0.824$ & 0 \\
+		15 & Whole & 655428 & $1.37\times10^{-9}$ & $5.77\times10^{-9}$ & $0.868$ & 4593 \\
+		15 & Central & 90152 & $4.32\times10^{-12}$ & $1.55\times10^{-10}$ & $0.673$ & 0 \\
+		\midrule
+		\multicolumn{7}{@{}l}{Natural mask plus controlled gap} \\
+		5 & Whole & 439967 & $1.21\times10^{-9}$ & $9.65\times10^{-9}$ & $0.00284$ & 10890 \\
+		5 & Central & 58123 & $2.40\times10^{-10}$ & $5.53\times10^{-9}$ & $0.135$ & 0 \\
+		15 & Whole & 477924 & $6.16\times10^{-10}$ & $5.63\times10^{-9}$ & $0.0702$ & 3329 \\
+		15 & Central & 75051 & $5.58\times10^{-12}$ & $1.68\times10^{-10}$ & $0.329$ & 0 \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+We first check how many estimates the default floor accepts. At the default floor, direct moments are accepted over 72.71\% and 77.15\% of the natural-mask sweep for $W=5$ and 15, falling to 51.79\% and 56.25\% after controlled removal (Table~\ref{tab:radar_statistics}). The seam contains no original observations: its 203 and 1410 accepted estimates are informed by observations elsewhere, not verified values in the missing sector. At the seam, accepted counts are 203 ($W=5$) and 1410 ($W=15$) in both masks, median $\rho\leq4.05\times10^{-11}$, $n_-=0$, with $\max|\Delta\mu|\leq3.35\times10^{-12}$~dBZ and $\max|\Delta\sigma^2|\leq1.17\times10^{-10}$~dBZ$^2$. At the outer boundary, accepted counts are 11,581/12,756 (natural) and 8,031/8,759 (controlled); median $\rho$ is 0.0100/0.0783 natural and $\leq8.71\times10^{-5}$ controlled; $n_-$ is 368/447 natural and 226/288 controlled, with $\max|\Delta\mu|\leq7.10\times10^{-10}$~dBZ and $\max|\Delta\sigma^2|\leq7.50\times10^{-9}$~dBZ$^2$. Radial diagnostics likewise show no original observations at the first gate, where $W=5$ accepts none of the 720 ratios but $W=15$ accepts all 720 after range mixing. The nominal width factor and $N_{\mathrm{eq}}$ there cannot be interpreted as counts of distinct observations. All-missing controls accept no moments and have zero coverage and equivalent data count.
+
+High agreement does not guarantee positive-weight statistics. Numerical agreement does not ensure positive-weight statistics. The independent azimuth weights reach approximately $-0.0195$, and natural-mask raw $d$ spans $[-0.0301,1.0298]$ for $W=5$ and $[-0.0367,1.0267]$ for $W=15$. Negative raw variance occurs at 13,322 and 4,593 accepted cells, respectively, even at the default floor. The central region has no negative raw variances at that floor, but its agreement and coverage alone do not establish statistical reliability. Across both nonempty masks, the maximum default-floor raw-variance discrepancy is $1.69\times10^{-7}$~dBZ$^2$, compared with $1.32\times10^{-8}$~dBZ$^2$ after clamping; standard deviation differs by at most $2.90\times10^{-8}$~dBZ. Raw $d$ differs by at most $8.32\times10^{-14}$, and $N_{\mathrm{eq}}$ by $6.68\times10^{-11}$ cells. These results establish implementation agreement, not the validity of treating signed-weight moment differences or their clamped values as conventional variances.
+
+We then test how sensitive the results are to that floor. The floor sensitivity uses $10^{-5}$, $10^{-4}$, $10^{-3}$, and $10^{-2}$ without completion. Lowering the floor to $10^{-5}$ raises natural-mask acceptance to 83.16\% and 85.36\%, but increases negative raw-variance counts to 51,309 and 23,131 for $W=5$ and 15. Of 648 nondefault-floor comparisons, 30 exceed the unchanged numerical tolerances, all at $10^{-5}$; the largest mean and raw-variance discrepancies are $4.29\times10^{-6}$~dBZ and $1.23\times10^{-2}$~dBZ$^2$. Raw-mask and acceptance checks still agree, and no default-floor comparison fails. Raising the floor to $10^{-2}$ reduces natural-mask acceptance to 68.59\% and 73.41\%. Thus the floor changes both compared coverage and floating-point sensitivity. These direct-ratio checks do not evaluate default completion or compare with interpolation-first smoothing.
+
+Figure~\ref{fig:radar_statistics} displays the natural-mask $W=15$ observations, mean, reported standard deviation, and local data coverage. The enlarged views show a $20\times20$~km square after full-sweep filtering; its corners extend beyond the $R\leq10$~km radial diagnostic region used in Table~\ref{tab:radar_statistics}.
+
+\begin{figure}[pos=p,belowcap=0pt]
+	\centering
+	\includegraphics[width=\linewidth]{figures/round1/2d_radar_gaussian/pdf/radar_gaussian_statistics.pdf}
+	\caption{Natural-mask COW sweep 12, Gaussian $W=15$ (legacy index units): (a) observations; (b) normalized mean; (c,e) reported standard deviation; (d,f) local data coverage. Panels (e--f) enlarge $x,y\in[-10,10]$~km (dashed squares in c--d) after full-sweep filtering. Maps use native azimuths and slant ranges, not surface distances. Moments require finite raw $d>10^{-3}$; no completion/restoration. Gray marks missing observations in (a) and undefined estimates in (b,c,e). Red in (c) marks accepted cells clamped to zero where $M_2<\mu^2$ (4,593; none in zoom). Panels (a--b) share cmweather ChaseSpectral, $0$--$40$~dBZ with out-of-range extensions (mean extrema $-39.36$, $71.16$~dBZ). Coverage $\rho$ is a bounded mask-response diagnostic, not a measure of quality or reliability.}
+	\label{fig:radar_statistics}
+\end{figure}
+
+\FloatBarrier
+\subsection{Three-dimensional synthetic wind field}
+
+The final example is a synthetic three-dimensional wind field. The synthetic wind field combines a height-modulated tangential circulation, a localized vertical core, and weak background variations on a baseline $(z,y,x)$ grid of $18\times96\times96$ cells. Each signed component $u$, $v$, and $w$ receives independent normal perturbations of standard deviation 0.14 in arbitrary normalized velocity units. Vector anomalies occur with probability 0.003, with isotropic directions and amplitudes uniform on $[1.25,2.25]$ in the same units. Separate NumPy random streams use seeds 4101 for noise, 4102 for anomalies, and 4103 for missingness, giving one realization at each grid shape. Equal-shaped cases reuse these realizations, and the random 20\% and 50\% removal masks are nested. The common validity mask is the intersection of finite $u$, $v$, and $w$; missingness is independent of anomaly injection.
+
+We calculate each wind component separately. We calculate separate component moments over the spatial axes using the reflective odd boxcar $(3,7,7)$, never smoothing across a component index or replacing the components by wind speed. NumPy symmetric-window reductions provide the independent reference for a prepared DCT implementation, the untimed released statistics API, SciPy uniform filtering, and Astropy direct and FFT convolutions. Astropy uses explicit symmetric padding and cropping to match reflection; every method uses identical incomplete inputs and direct-ratio rules. Table~\ref{tab:wind_component_agreement} gives componentwise discrepancies for the baseline 20\% case, whose actual missing fraction is 20.1829\%. All 165,888 cells per component have defined moments, including the 33,481 missing-input locations.
+
+% Source: experiments/results/round1/3d_wind_boxcar/lead-review-3d-matched-20261027/.
+% comparison.csv: baseline20, whole_domain; maxima over all five methods
+% relative to numpy_windows, retaining the untimed released-API validation.
+% All cases/regions: 1,920 pass / 390 no_comparable / 0 fail (2,310 rows).
+
+\begin{table}[pos=hbp]
+	\centering
+	\caption{Maximum absolute componentwise discrepancies against NumPy for the baseline 3D wind case with requested 20\% missingness, pooled over the five checked implementations. Each moment uses all 165,888 cells. Mean and standard-deviation differences are in normalized velocity units, variance differences in squared units, and equivalent-count differences in cells.}
+	\label{tab:wind_component_agreement}
+	\small
+	\begin{tabular}{@{}lrrrr@{}}
+		\toprule
+		Component & $\max|\Delta\mu|$ & $\max|\Delta\sigma^2|$ & $\max|\Delta\sigma|$ & $\max|\Delta N_{\mathrm{eq}}|$ \\
+		\midrule
+		$u$ & $3.11\times10^{-15}$ & $6.22\times10^{-15}$ & $2.10\times10^{-14}$ & $1.99\times10^{-13}$ \\
+		$v$ & $2.89\times10^{-15}$ & $7.11\times10^{-15}$ & $2.17\times10^{-14}$ & $1.99\times10^{-13}$ \\
+		$w$ & $4.44\times10^{-16}$ & $2.64\times10^{-16}$ & $4.72\times10^{-16}$ & $1.99\times10^{-13}$ \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+Figure~\ref{fig:wind_statistics} displays observed and componentwise local-mean wind in three dimensions; classification diagnostics are in Section~\ref{sec:discussion}. Only one component's standard deviation is displayed for clarity; all three components are calculated and checked separately.
+
+\begin{figure}[pos=p,belowcap=0pt]
+	\centering
+	\includegraphics[width=\linewidth]{figures/round1/3d_wind_boxcar/pdf/wind_component_statistics.pdf}
+	\caption{Observed wind and local statistics for the $18\times96\times96$ baseline case with 20.1829\% missingness and full-volume reflective $(3,7,7)$ boxcars. Panels (a--b) use the same display lattice, with $(z,y,x)$ strides $(3,8,8)$; gray points in (a) mark sampled missing inputs. The 3D arrows have fixed display length, and viridis colours encode the observed vector magnitude or the magnitude of the componentwise mean vector, not mean wind speed. Red arrows identify 100 sampled observed injections, not detected anomalies. Dashed outlines mark zero-based plane 9 ($z=0.0588$), shown in (c--d) as $\mu_w$ and population standard deviation $\sigma_w$. In (c), $(\mu_u,\mu_v)$ arrows use stride 6 and the displayed length key. Sampling is for display only; coordinates are normalized and velocity units arbitrary. All moments satisfy finite raw $d>10^{-3}$ without completion or restoration. Estimates at missing-input locations are not recovered observations; standard deviation describes local variation, not uncertainty in the mean.}
+	\label{fig:wind_statistics}
+\end{figure}
+
+We also test a few variations of grid and window. Additional checks use $18\times48\times48$ and $24\times128\times128$ grids, narrower $(3,3,3)$ and broader $(5,15,15)$ windows, a missing $z$ plane, a central missing block, and all-missing and single-observation controls. Over all 11 cases, maximum discrepancies are $2.73\times10^{-14}$ for mean, $4.06\times10^{-14}$ for variance, and $2.08\times10^{-11}$ cells for $N_{\mathrm{eq}}$, with matching defined-output masks. The largest standard-deviation discrepancy, $1.12\times10^{-8}$, occurs in the single-observation control near zero variance; its variance discrepancy is at most $1.39\times10^{-16}$. Table~\ref{tab:wind_coverage_flags} distinguishes accepted moment coverage from observed inputs: the missing block leaves 108 undefined cells, while only 147 of 720 cells have defined moments in the single-observation control. All-missing moments remain undefined and both coverage and equivalent count are zero.
+
+Finally we show one descriptive use of the moments. For a descriptive application, component $c\in\{u,v,w\}$ is flagged when $|x_c-\mu_c|>3\sigma_c$, only at observed cells with $\rho\geq0.35$, finite mean and standard deviation, and $\sigma_c>10^{-8}$ normalized velocity units. Flags remain separate among components; missing observations cannot be flagged. The additional eligibility gate is distinct from acceptance of a moment ratio: for example, all moments are defined in the 50\% case, but 66 of its 82,707 observed cells are ineligible for scoring. Table~\ref{tab:wind_coverage_flags} reports fixed-criterion counts, not correct-detection counts or an optimized threshold. Each candidate is included in its own moments and can shift the local mean and inflate dispersion, reducing its score. This illustration neither mitigates that self-influence nor establishes detector accuracy through threshold tuning or independent evaluation.
+
+% Same 3D run: comparison.csv, dct_shared_moments, whole_domain, mean,
+% n_compared (identical for all components/moments/methods); application_counts.csv
+% gives n_observed, n_eligible, n_flagged. No detection-performance aggregation.
+\begin{table}[htbp]
+	\centering
+	\caption{3D moment coverage and descriptive flags for selected missingness cases, using $(3,7,7)$ boxcars. Random percentages denote requested removal probabilities. Counts refer to spatial cells per component, not the sum over components. Compared counts are jointly defined moment outputs; defined-output masks match across methods. Observed and eligible counts are common to $u,v,w$. The final column lists separate flag counts in that order.}
+	\label{tab:wind_coverage_flags}
+	\small
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular}{@{}llrrrl@{}}
+		\toprule
+		Input mask & Grid $(z,y,x)$ & Observed & Compared & Eligible & Flags $(u,v,w)$ \\
+		\midrule
+		Complete & $18\times96\times96$ & 165888 & 165888 & 165888 & $(488,469,651)$ \\
+		Random 20\% & $18\times96\times96$ & 132407 & 165888 & 132407 & $(378,357,508)$ \\
+		Random 50\% & $18\times96\times96$ & 82707 & 165888 & 82641 & $(240,241,306)$ \\
+		Missing plane & $18\times48\times48$ & 39168 & 41472 & 39168 & $(104,93,150)$ \\
+		Missing block & $10\times24\times24$ & 5040 & 5652 & 5040 & $(12,10,25)$ \\
+		Single observation & $5\times12\times12$ & 1 & 147 & 0 & $(0,0,0)$ \\
+		All missing & $5\times12\times12$ & 0 & 0 & 0 & $(0,0,0)$ \\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+%% ========================================================================
+\FloatBarrier
+\section{Computational performance}
+\label{sec:performance}
+
+\subsection{Three-dimensional benchmark setup}
+\label{sec:benchmark_setup}
+
+The 3D comparison measures the same componentwise statistics with different filtering implementations. Every calculation applies seven full-volume filters: one to the common validity mask, then one to each of $u,v,w$ and its square. Each component mean is reused in its clamped population variance, whose square root gives standard deviation; the mask response and equivalent-count array are shared across components. All methods use identical inputs, odd boxcars, half-sample reflection, and the strict acceptance rule of finite $d>10^{-3}$. Completion and input-NaN restoration are disabled; these are not costs of the default gap-completion procedure.
+
+Every method prepares its filter once per timed calculation and reuses it for the seven fields. The experiment-local DCT implementation constructs axis responses using the released v1.0.0 \texttt{get\_dct\_transfer\_function}, then applies them within each N-D DCT/multiply/inverse-DCT sequence. The released statistics API is checked numerically in a separate untimed comparison. NumPy reduces symmetric sliding-window views one output $z$ plane at a time, without materializing all windows. Astropy direct and FFT convolution reuse one dense spatial kernel and explicitly pad and crop each filtered field to match reflection. Astropy FFT's internal per-call padding and kernel transforms remain included; no cached kernel FFT is assumed.
+
+Measurements ran sequentially on an Apple M4 Pro with 24~GiB RAM, using x86\_64 Python 3.11.13 under Rosetta~2, not native ARM Python, with NumPy 2.4.4, SciPy 1.17.1, and Astropy 8.0.2. Numerical-library thread limits were requested as one. Each 3D method--case pair has three fresh-worker repetitions, with method order rotated and no filter warm-up. Workers preload the same libraries and use matching input hashes. Wall-clock timing starts with resident inputs and includes mask construction, zero replacement, padding, filter preparation, seven filters, normalization, variance, square roots, and output allocation. Input generation, imports, I/O, plotting, and anomaly flagging are excluded.
+
+\subsection{Three-dimensional runtime and memory}
+\label{sec:benchmark_memory}
+
+Table~\ref{tab:performance_time} compares selected implementations, not all spatial algorithms. The SciPy 1.17.1 \href{https://github.com/scipy/scipy/blob/v1.17.1/scipy/ndimage/_filters.py\#L1550-L1618}{\texttt{uniform\_filter}} calculation uses the same boxcar estimator, mask normalization, seven filters, and outputs, and has a lower median time than prepared DCT in all eight cases. For the $18\times96\times96$ grid with a $(3,7,7)$ window and 20.18\% missingness, its median is 0.0161~s versus 0.0301~s for DCT. Its separable one-dimensional running sums in \href{https://github.com/scipy/scipy/blob/v1.17.1/scipy/ndimage/src/ni_filters.c\#L311-L374}{\texttt{NI\_UniformFilter1D}} give approximately $\mathcal{O}(N)$ cost for $N$ cells at fixed dimensionality and ordinary window sizes, rather than the $\mathcal{O}(NK)$ cost of generic direct convolution with $K$ window cells. These timings therefore do not establish superiority over optimized spatial boxcar filtering.
+
+% Source: experiments/results/round1/3d_wind_boxcar/
+% lead-review-3d-matched-20261027/{benchmark_runs,benchmark_summary,settings}.csv.
+% Times are medians recomputed from the three successful raw repetitions;
+% memory entries below are their maximum peak_ram_mib, not peak minus baseline.
+% All five methods and all eight cases remain in the accompanying CSV files.
+\begin{table}[pos=hbp]
+	\centering
+	\caption{Median elapsed time (s) over three fresh-worker repetitions of the matched seven-filter 3D statistics calculation, including preparation. Grid and window dimensions are ordered $(z,y,x)$; widths are in grid cells and do not preserve a physical footprint across resolutions. Missingness is the actual percentage. Missing cells are randomly placed except in the missing-plane row (${}^{\mathrm{p}}$). DCT is the experiment-local prepared implementation; direct and FFT columns are Astropy. SciPy computes the same workload with lower medians than DCT in all eight cases (0.0161~s versus 0.0301~s for the 20.18\%-missing $(3,7,7)$ baseline).}
+	\label{tab:performance_time}
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+		\toprule
+		Grid & Window & Missing (\%) & DCT & NumPy & \multicolumn{2}{c}{Astropy} \\
+		\cmidrule(l){6-7}
+		 & & & & & Direct & FFT \\
+		\midrule
+		$18\times48\times48$ & $(3,7,7)$ & 20.47 & 0.0068 & 0.0940 & 0.0285 & 0.0284 \\
+		$18\times96\times96$ & $(3,7,7)$ & 0.00 & 0.0290 & 0.3713 & 0.1060 & 0.1131 \\
+		$18\times96\times96$ & $(3,7,7)$ & 20.18 & 0.0301 & 0.3738 & 0.1069 & 0.1122 \\
+		$18\times96\times96$ & $(3,7,7)$ & 50.14 & 0.0308 & 0.3765 & 0.1055 & 0.1069 \\
+		$24\times128\times128$ & $(3,7,7)$ & 20.06 & 0.0888 & 0.8852 & 0.2357 & 0.2316 \\
+		$18\times96\times96$ & $(3,3,3)$ & 20.18 & 0.0321 & 0.1416 & 0.0286 & 0.0900 \\
+		$18\times96\times96$ & $(5,15,15)$ & 20.18 & 0.0295 & 1.4898 & 1.2883 & 0.1719 \\
+		$18\times48\times48$ & $(3,7,7)$ & $5.56^{\mathrm{p}}$ & 0.0067 & 0.0960 & 0.0286 & 0.0332 \\
+		\bottomrule
+	\end{tabular*}
+\end{table}
+
+For the narrow $(3,3,3)$ window, Astropy direct has a lower median time than DCT (0.0286 versus 0.0321~s). Its median increases to 1.2883~s for $(5,15,15)$, whereas DCT takes 0.0295~s. NumPy window reductions also become more expensive across these wider-window cases. DCT medians vary little across these window choices, but SciPy retains lower medians, taking 0.0176 and 0.0171~s for the narrow and broad cases. Missing data do not reduce the number or extent of filtering passes. The size and missingness comparisons in Table~\ref{tab:performance_time} describe these implementations on this machine; three repetitions and a few sizes do not establish an asymptotic law or a reliable crossover.
+
+Peak process resident set size (RSS) is sampled at 1-ms intervals and supplemented by the native lifetime high-water mark only when the timed call exceeds its previous value. Table~\ref{tab:performance_ram} reports the maximum peak over the three repetitions, in MiB ($2^{20}$ bytes). RSS includes native arrays, resident inputs, and the matched preloaded libraries, not just filter allocations. Before-call RSS is recorded separately; subtracting it does not give an exact allocation count. If no new lifetime peak is reached, shorter-lived peaks can be missed between samples. SciPy's maximum RSS is 152.6~MiB for the 20.18\%-missing $(3,7,7)$ baseline and 210.8~MiB for the larger volume, compared with 137.1 and 226.5~MiB for DCT, respectively; there is no uniform memory ranking between them. Individual repetitions, quartiles, before-call RSS, and all SciPy measurements are recorded in the experiment's \texttt{benchmark\_runs.csv}, \texttt{benchmark\_summary.csv}, and \texttt{settings.csv} files.
+
+\begin{table}[pos=htbp]
+	\centering
+	\caption{Maximum measured total process RSS (MiB) for the same configurations and three repetitions as Table~\ref{tab:performance_time}. These peaks include common inputs and libraries and are not algorithm-only memory allocations. The superscript p denotes the missing-plane mask.}
+	\label{tab:performance_ram}
+	\setlength{\tabcolsep}{4pt}
+	\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lrrrrrr@{}}
+		\toprule
+		Grid & Window & Missing (\%) & DCT & NumPy & \multicolumn{2}{c}{Astropy} \\
+		\cmidrule(l){6-7}
+		 & & & & & Direct & FFT \\
+		\midrule
+		$18\times48\times48$ & $(3,7,7)$ & 20.47 & 113.8 & 111.4 & 116.2 & 147.8 \\
+		$18\times96\times96$ & $(3,7,7)$ & 0.00 & 142.8 & 152.7 & 189.2 & 274.1 \\
+		$18\times96\times96$ & $(3,7,7)$ & 20.18 & 137.1 & 156.8 & 173.6 & 277.6 \\
+		$18\times96\times96$ & $(3,7,7)$ & 50.14 & 149.2 & 156.5 & 163.5 & 258.2 \\
+		$24\times128\times128$ & $(3,7,7)$ & 20.06 & 226.5 & 234.8 & 253.0 & 312.8 \\
+		$18\times96\times96$ & $(3,3,3)$ & 20.18 & 152.6 & 157.7 & 154.2 & 259.5 \\
+		$18\times96\times96$ & $(5,15,15)$ & 20.18 & 134.7 & 149.7 & 196.5 & 403.1 \\
+		$18\times48\times48$ & $(3,7,7)$ & $5.56^{\mathrm{p}}$ & 109.5 & 112.5 & 115.0 & 157.4 \\
+		\bottomrule
+	\end{tabular*}
+\end{table}
+
+\FloatBarrier
+\subsection{Radar runtime and memory}
+\label{sec:radar_performance}
+
+The radar benchmark compares our prepared spectral calculation with NumPy and SciPy range-adaptive loop implementations on the $720\times1180$ sweep, both masks, and Gaussian widths $W=5,15$ from Section~\ref{sec:radar_application}. Each method prepares once and filters the finite mask, zero-filled observations, and their squares with the complete azimuth-first/range-second operator. Common code calculates mean, variance, standard deviation, coverage, and equivalent count, retaining the strict raw $d>10^{-3}$ test and variance clamp without completion or restoration. The prepared DCT/RFFT implementation follows the released operator with vectorized azimuth responses and shared preparation; it does not time separate statistics-API calls.
+
+Both direct implementations loop over range gates, applying the corresponding azimuth kernel with the same index-based scaling as the spectral calculation. NumPy uses \texttt{convolve} with wrap padding, then a row loop with symmetric padding for half-sample reflection in range. SciPy uses \texttt{ndimage.convolve1d} with wrap boundaries per gate and its compiled reflective range pass. Both retain the same full finite-grid weights, constructed by inverse FFT inside the timer; the cosine-sum reference remains untimed. Weights and full-array statistics pass the unchanged tolerances before timing, including accepted masks and a released-API check. Five fresh-worker repetitions follow the hardware and one-thread protocol in Section~\ref{sec:benchmark_setup} without warm-up. Timings include masking, preparation, padding, filtering, normalization, and allocation; I/O and verification are excluded. RSS follows Section~\ref{sec:benchmark_memory}.
+
+% Source: experiments/results/round1/2d_radar_range_loops/
+% radar-range-loops-20261103/{benchmark_runs,benchmark_summary,comparison,settings}.csv.
+\begin{table}[pos=hbp]
+	\centering
+	\caption{Prepared spectral radar statistics versus range-adaptive convolution loops, including preparation and three complete filters. Ours is prepared DCT/RFFT; NumPy and SciPy loop over range gates with the same full finite-grid weights. Speedup is each loop's median time divided by ours. Times are medians of five fresh-worker repetitions; RSS is the maximum total process peak in MiB.}
+	\label{tab:radar_performance}
+	\setlength{\tabcolsep}{3pt}
+	\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llrrrrrrrr@{}}
+		\toprule
+		Input & $W$ & \multicolumn{3}{c}{Time (s)} & \multicolumn{2}{c}{Speedup} & \multicolumn{3}{c}{Peak RSS (MiB)} \\
+		\cmidrule(lr){3-5}\cmidrule(lr){6-7}\cmidrule(l){8-10}
+		 & & Ours & NumPy & SciPy & NumPy & SciPy & Ours & NumPy & SciPy \\
+		\midrule
+		Natural & 5 & 0.0544 & 0.8549 & 2.6439 & 15.72 & 48.63 & 186.2 & 191.0 & 198.8 \\
+		Natural & 15 & 0.0538 & 0.8509 & 2.6573 & 15.81 & 49.36 & 189.4 & 197.4 & 203.9 \\
+		Added gap & 5 & 0.0530 & 0.8580 & 2.6430 & 16.18 & 49.85 & 202.0 & 198.2 & 199.5 \\
+		Added gap & 15 & 0.0536 & 0.8495 & 2.6412 & 15.85 & 49.27 & 162.6 & 197.8 & 204.4 \\
+		\bottomrule
+	\end{tabular*}
+\end{table}
+
+Table~\ref{tab:radar_performance} gives speedups of 15.7--16.2 over the NumPy range-adaptive loop and 48.6--49.9 over the SciPy loop across all four cases. These factors concern the same full-support weights, not ordinary truncated Gaussian smoothing. A separate symmetric-extension SciPy FFT comparison gave smaller speedups of 1.49--1.75; the loop results do not imply a similar advantage over every SciPy algorithm. One sweep and two widths do not establish general scaling. Individual measurements and quartiles remain in the CSVs.
+
+\FloatBarrier
+\subsection{Additional mean-only benchmarks}
+
+% Source: experiments/results/round1/3d_large_boxcar_mean/
+% quick-large-mean-1gib-20261027/{benchmark_runs,benchmark_summary,settings,comparison}.csv.
+A separate exploratory check uses one scalar $512^3$ \texttt{float64} input (1~GiB), with 19.9983\% missing values. SciPy uniform and prepared DCT filtering use reflective boxcars and the same direct-ratio rule, overwriting their input and mask buffers. Timing includes mask construction, zero replacement, preparation, two filters, and mean normalization, not the full three-component statistics. From two fresh-worker repetitions per method and width, median SciPy times are 13.980 and 13.853~s for $3^3$ and $31^3$ boxcars, respectively; DCT takes 15.583 and 15.510~s, about 12\% longer. Maximum recorded total RSS is approximately 2.34~GiB, using before/after RSS and any newly exceeded lifetime high-water mark rather than interval sampling.
+
+Small-array checks cover every output cell, but the large outputs are compared only at 2,173 fixed boundary and random sample locations, with maximum mean discrepancy $2.50\times10^{-15}$. Native swap counters do not increase during timing, although the host has pre-existing memory pressure. A separate headroom check found insufficient memory for the guarded 2-GiB case, so that input was not allocated. This mean-only experiment examines window-width sensitivity at one input size; the similar-order runtimes do not establish dataset-size scaling or a crossover.
+
+% Source: experiments/results/round1/2d_radar_gaussian/
+% lead-review-radar-exact-only-20261027/{benchmark_runs,benchmark_summary,settings}.csv.
+For the $720\times1180$ natural-mask radar sweep, the earlier median spectral Gaussian mean costs are 0.0381~s at $W=5$ and 0.0385~s at $W=15$. Each width has three timed calls after one unmeasured warm-up call. Responses are rebuilt in each call, with mask construction, zero replacement, filtering, normalization, and output allocation included. These released mean-API costs are distinct from the prepared three-filter statistics workload in Section~\ref{sec:radar_performance}. The independent cosine-sum reference remains untimed. The 1D example has no timing study.
+
+%% ========================================================================
+\section{Discussion}
+\label{sec:discussion}
+
+Using one complete filter for all moment inputs and the original mask keeps the statistics and availability diagnostics consistent with the same geometry and boundary assumptions. The contribution is this integration of established normalized convolution \citep{Knutsson1993,Westin1994,Pham2006} with the spectral filters and two-dimensional angle--range construction of \citet{Valdivia2026RadarDCT}, rather than new normalization theory or exclusive per-axis control.
+
+Explicit geometry broadens the configurations that can be specified, but its widths remain coordinate-line scales on regular tensor grids. Geometry-dependent stages follow a prescribed order, so they should not be interpreted as isotropic, geodesic, or cell-volume-weighted averaging. The real-data example tests only a 2D polar sweep with legacy index-unit widths, not fixed physical-distance windows or N-D observational configurations. The 3D wind example is Cartesian and does not extend that polar evidence.
+
+Agreement with matched references isolates numerical consistency from estimation quality; it does not establish superiority over boundary-matched alternatives. The radar controlled-removal comparison uses the same reduced input without testing recovery of unknown values. The 1D truth errors instead characterize one known synthetic signal on its defined-output domain, not general gap-recovery accuracy; naturally missing radar values remain unknown. Because all comparisons and timings disable completion, the accuracy and cost of the default fallback remain unassessed. No same-data comparison with the prior interpolation-first workflow was performed.
+
+For nonnegative, constant-preserving spatial weights, local data coverage describes weighted availability, and direct ratios with an accepted positive denominator give a bounded mean and a nonnegative weighted population variance in exact arithmetic. The equivalent data count expresses coverage on a nominal-width scale, not generally as a count of distinct observations or a statistical effective sample size. The moments are descriptive rather than unconditionally unbiased estimates; neither coverage diagnostic by itself measures uncertainty.
+
+Signed spatial weights impose a stronger limitation than low coverage alone. Both radar implementations reproduce negative raw variances at the default floor, so these values cannot automatically be attributed to roundoff. Clipping coverage and clamping variance do not restore positive-weight statistics. The low-floor sensitivity failures further show that admitting smaller denominators can amplify floating-point differences even when accepted locations agree. The floor is therefore a numerical acceptance choice, not a statistical reliability threshold.
+
+The componentwise wind flags illustrate one use of local moments, not a validated anomaly detector. In the baseline 20\% case, 406 of the 521 vector-injection locations remain observed and eligible; the 115 missing injections are excluded from classification. Comparing each component's flags with the vector-injection labels gives true-positive, false-positive, and false-negative counts of $(286,92,120)$ for $u$, $(270,87,136)$ for $v$, and $(290,218,116)$ for $w$. These are separate component diagnostics, not a combined vector detector; injections need not strongly affect every component. Each candidate contributes to its own mean and dispersion and can reduce its own score, but these counts do not isolate that effect. The fixed $k=3$ criterion is an illustrative choice, not an optimal or independently calibrated threshold.
+
+One possible extension is to exclude or downweight suspect observations and recompute local moments before applying the screening bands $\mu_c\pm3\sigma_c$. For exclusion, the revised mask must enter both moment numerators and normalization; rejected observations are not valid zeros, and the original availability mask remains distinct from later quality-control exclusions. \citet{Garcia2010} uses iterative residual-based reweighting in a DCT-based penalized smoother, a different estimator from the normalized boxcar moments used here. For instrument data, \citet{Vitale2021} reviews iterative mean/standard-deviation despiking and robust location and scale alternatives for eddy covariance measurements, evaluating classifications and recovered variance. These approaches may reduce contamination, but missed anomalies can remain influential, genuine flow structures can be rejected, and selective removal can underestimate variability. No iterative rejection, robust reweighting, or independent detector evaluation was performed here; improved screening or variance estimation requires separate validation, and the screening bands are not confidence intervals.
+
+Computational trade-offs depend on the kernel and implementation. In the matched seven-filter workload, prepared DCT has lower median times than NumPy window reductions and Astropy convolution, except for Astropy direct convolution with the narrow window. SciPy's specialized running-sum boxcar has lower medians in every measured full-statistics case while computing the same masked estimator. Thus the weak window-width dependence of DCT timing in these tests does not imply a general advantage over spatial boxcar algorithms. These costs concern the prepared shared-moment implementation, not the released statistics API, which was checked numerically but not timed.
+
+The similar-order runtimes in the separate 1-GiB mean check should not be extrapolated to full-statistics scaling or a crossover: it uses two in-place filters, two repetitions, one input size, and sampled output comparisons. All benchmarks ran under Rosetta~2, whose effect on relative performance was not measured. Process RSS also includes inputs and libraries, so the reported peaks guide resource planning rather than quantify filter allocations alone.
+
+For radar, the calculations operate on dBZ, so their dispersion outputs do not directly quantify linear-reflectivity variability or measurement-noise uncertainty. The finite-value mask records availability rather than measurement quality, and upstream QC remains unverified. Practical use therefore requires application-specific validity, width, and acceptance choices. Neither finite output nor high local data coverage supplies automatic quality assurance, and these experiments establish no universal coverage cutoff.
+
+%% ========================================================================
+\section{Conclusion}
+\label{sec:conclusion}
+
+Building on established spectral filters and normalized convolution, this work unifies masked local mean, variance, standard deviation, and data-availability diagnostics through the same complete operator. It combines independent per-axis kernel and boundary choices with reflective Cartesian filtering and explicit geometry on regular N-D polar grids. Agreement with weight- and boundary-matched references is demonstrated for 1D discrete boxcars with missing observations, Gaussian statistics on one real 2D COW radar sweep, and componentwise 3D Cartesian wind boxcars with explicit missingness. Local data coverage $\rho$ and equivalent data count $N_{\mathrm{eq}}$ provide diagnostics of the filtered mask, not uncertainty estimates; $N_{\mathrm{eq}}$ is not generally an observation count or statistical effective sample size.
+
+The matched 3D runtime and process-RAM results show implementation-dependent trade-offs, not a universal ranking. SciPy's running-sum boxcar computes the same estimator faster than prepared DCT in every tested full-statistics case, and Astropy direct convolution is faster for the narrowest window. The radar comparison finds lower prepared DCT/RFFT times than the NumPy and SciPy range-adaptive convolution loops on the tested sweep. These timings describe shared-filter calculations, not separate released statistics-API calls. Numerical agreement on the same incomplete input does not establish recovery of unknown values or statistical reliability; clamping negative signed-weight moment differences does not establish a conventional variance interpretation. These direct-ratio tests do not assess default completion or provide observational validation of N-D polar processing.
+
+%% ========================================================================
+\section*{Acknowledgments}
+
+This research was sponsored by the National Science Foundation grant AGS~2114011.
+
+\noindent\textbf{Code availability section}
+
+\begin{description}
+\item[Name of the code/library] \texttt{dct-toolkit}, imported in Python as \texttt{dct\_toolkit}
+\item[Contact] Jairo M.~Valdivia (\texttt{jairo.valdiviaprado@colorado.edu})
+\item[Hardware requirements] Standard workstation (CPU). GPU is not required.
+\item[Program language] Python $\ge$ 3.8
+\item[Software required] NumPy $\ge$ 1.20; SciPy $\ge$ 1.8. These and Python $\ge$ 3.8 are the runtime requirements declared in the released v1.0.0 \href{https://github.com/JValdivia23/dct-toolkit/blob/9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c/pyproject.toml}{\texttt{pyproject.toml}}; the actual experiment environment is specified in Section~\ref{sec:validation}.
+\item[Source codes] The toolkit is publicly available at \url{https://github.com/JValdivia23/dct-toolkit} under the \href{https://github.com/JValdivia23/dct-toolkit/blob/9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c/LICENSE}{MIT license}. All numerical results reported here are based on released v1.0.0, \href{https://github.com/JValdivia23/dct-toolkit/commit/9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c}{commit \texttt{9cdf40f}}.
+\item[Documentation] The release includes a \href{https://github.com/JValdivia23/dct-toolkit/blob/9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c/README.md}{README}, an \href{https://github.com/JValdivia23/dct-toolkit/blob/9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c/docs/API_REFERENCE.md}{API reference}, and the \href{https://github.com/JValdivia23/dct-toolkit/blob/9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c/docs/MATHEMATICAL_BASIS.md}{mathematical basis}, with examples and tests in the same repository.
+\end{description}
+
+The manuscript-specific standalone experiment scripts, recorded settings, and CSV results are held locally and are not included in the toolkit release. No public repository or archive for these materials has been verified. The main 3D timings use an experiment-local prepared seven-filter DCT calculation based on released transfer functions, not the released statistics API.
+
+\noindent\textbf{Data availability}\par\nopagebreak[4]
+
+Synthetic inputs are generated by the manuscript-specific scripts using the settings in Section~\ref{sec:validation}. The radar calculation uses one supplied processed COW \texttt{DBZHC} NetCDF file from WINTRE-MIX on 23 February 2022; the selected sweep and validity-mask construction are described in Section~\ref{sec:validation}. No public archive for this exact processed file has been verified; its upstream QC, public access route, and redistribution permission remain unresolved.
+
+%% CRediT statement (CAS v2.4: after main text / appendices, before bibliography).
+\printcredits
+
+\section*{Declaration of generative AI and AI-assisted technologies in the manuscript preparation process}
+During the preparation of this work the author(s) used large language models, including Gemini 3.x, GPT-5.x, and other systems (including open-weight models), in order to improve writing, assist with \LaTeX\ formatting, and support code generation. After using these tools, the author(s) reviewed and edited the content as needed and take(s) full responsibility for the content of the published article. The scientific ideas, methods, analyses, and conclusions are solely those of the authors.
+
+\bibliographystyle{cas-model2-names}
+\bibliography{references}
+
+\end{document}

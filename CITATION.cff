@@ -1,0 +1,14 @@
+cff-version: 1.2.0
+message: "If you use this repository, please cite the associated Computers & Geosciences manuscript."
+title: "Reproducible experiments for CAGEO-D-26-01410"
+authors:
+  - family-names: "Valdivia"
+    given-names: "Jairo M."
+    orcid: "https://orcid.org/0000-0003-0709-1163"
+  - family-names: "Chapman"
+    given-names: "William E."
+    orcid: "https://orcid.org/0000-0002-0472-7069"
+  - family-names: "Friedrich"
+    given-names: "Katja"
+    orcid: "https://orcid.org/0000-0001-8417-4232"
+license: "MIT"
