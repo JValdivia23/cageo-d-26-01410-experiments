@@ -1,0 +1,7 @@
+run_id,case_id,method,operation,n_success,n_failure,median_time_s,q25_time_s,q75_time_s,max_peak_ram_mib
+radar-discrete-gaussian-20261110,natural_W5,analytical_spectral,radar_gaussian_statistics_three_filters_setup_included,5,0,0.06507433397928253,0.05371975002344698,0.0728059170069173,237.328125
+radar-discrete-gaussian-20261110,natural_W5,discrete_spectral,radar_gaussian_statistics_three_filters_setup_included,5,0,0.08906645799288526,0.0875294579891488,0.09090412495424971,245.3828125
+radar-discrete-gaussian-20261110,natural_W5,discrete_spatial,radar_gaussian_statistics_three_filters_setup_included,5,0,0.06778954097535461,0.06733925000298768,0.06811054196441546,213.6015625
+radar-discrete-gaussian-20261110,natural_W15,discrete_spectral,radar_gaussian_statistics_three_filters_setup_included,5,0,0.08788070798618719,0.07998495799256489,0.08926829200936481,251.3046875
+radar-discrete-gaussian-20261110,natural_W15,discrete_spatial,radar_gaussian_statistics_three_filters_setup_included,5,0,0.08767266699578613,0.08580474997870624,0.08802804199513048,207.5390625
+radar-discrete-gaussian-20261110,natural_W15,analytical_spectral,radar_gaussian_statistics_three_filters_setup_included,5,0,0.06383308401564136,0.05939358298201114,0.06729316699784249,233.734375

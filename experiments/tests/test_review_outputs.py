@@ -396,6 +396,10 @@ def test_saved_benchmark_summaries(directory):
             assert row["max_peak_ram_mib"] == ""
 
     if directory.parent.name == "3d_wind_boxcar":
+        # Archived summaries above keep their original provenance. The current
+        # Abstract must instead match the freshly measured release-specific run.
+        current = SCRIPTS.parents[1] / "experiments/results/round1/v2.0.0/3d_wind_boxcar/release-v2-20261111"
+        summaries = read_rows(current / "benchmark_summary.csv", SUMMARY_FIELDS)
         text = (SCRIPTS.parents[1] / "manuscript/main.tex").read_text()
         abstract = text.split("\\begin{abstract}")[1].split("\\end{abstract}")[0]
         cartesian = abstract.split("For three-dimensional Cartesian grids,")[1].split(".", 1)[0]
@@ -409,7 +413,7 @@ def test_saved_benchmark_summaries(directory):
                       for case in cases}
             assert max(ratios, key=ratios.get) == "broad20"
             rounded = round(max(ratios.values()))
-            number = {6: "six"}.get(rounded, str(rounded))
+            number = {5: "five", 6: "six"}.get(rounded, str(rounded))
             assert f"{number} times faster than {label}" in cartesian
         assert "was up to" in cartesian and "largest gains for wider windows" in cartesian
 

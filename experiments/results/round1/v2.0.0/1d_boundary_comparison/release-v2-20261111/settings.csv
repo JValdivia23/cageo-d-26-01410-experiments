@@ -1,0 +1,231 @@
+run_id,case_id,setting,value,unit
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,MKL_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,NUMEXPR_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,OMP_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,OPENBLAS_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,VECLIB_MAXIMUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,actual_missing_fraction,0.0,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,array_size,200,cells
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,astropy_version,8.0.2,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,boundary,"[""periodic"", ""reflective""]",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,checks,Frozen v1 input/coverage/comparisons verified; ten v2 sources checked; unchanged numerical tolerances,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,command,"[""experiments/scripts/run_review_v2.py"", ""boundary"", ""--run-id"", ""release-v2-20261111""]",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,common_helper_sha256,aa8d21499b2b17510f08205e46fdc084dcea3d333a903690f548d713845fe317,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,comparison_target,numerical disagreement vs independent matching-boundary spatial windows,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,completion,False,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,cpu,i386,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,dct_toolkit_commit,7ff29e998dd1102d3fef2a84050402e86dc7ef67,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,dct_toolkit_source,/private/var/folders/nt/th92gg516gqbtqd8y3fqclv00000gp/T/opencode/cageo-v2-20261111/toolkit/dct_toolkit,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,dct_toolkit_version,2.0.0,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,denominator_floor,0.001,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,denominator_rule,finite raw mask response strictly > floor; no additive epsilon,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,discrete_width,15,cells
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,displayed_models,"[""periodic"", ""reflective"", ""truncated""]",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,dtype,float64,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,edge_region,first and last M//2=7 cells (14 total),
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,fallback_eligibility,denominator not accepted and any original finite observation in 1D domain,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,fft_boundary,symmetric pad by M//2; linear fftconvolve; valid crop,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,frozen_comparison.csv_sha256,d62e1a28fb14c6f0d6b46f6bb18cf1bca79b6f4ec14046c9126a31efcab86507,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,frozen_coverage.csv_sha256,44b6f5697055addf835af6bb61912ccffd65a01c7343d0948352f20880b67eaa,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,frozen_settings.csv_sha256,71d6302a2a0246e35f5e01229502d718cc2463f2016642b3d6aa736a29e9ac17,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,gap_filling,"disabled; eligibility reported, never executed",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,gap_interval,not applicable,index
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,gap_region,originally missing input cells; may overlap edge region,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,grid_endpoints,both included,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,inherited_case,trend_sine_seed0_complete_n200_m15,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,inherited_run,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO/experiments/results/round1/1d_boxcar/lead-review-1d-20261027,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,inherited_saved_script_sha256,3148cb3740fecaa1cb6fa62f7f4dd443b8110456d5bd89aa85e3edf49abf97db,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,inherited_script_sha256,bf445a42560ae32e4db2dcf108c2f661a1f5e41f3fc142af585d8f4b347621bd,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,input_sha256,b9cd1f9cd5e947b143d04238a45b7fa865a650670383ac2f094129aeed00fbf7,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,interior_comparison,"spectral results vs truncated NumPy on indices [7,193), full windows only; undefined cells excluded but counted; std near zero may amplify variance roundoff",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,kernel,centered odd discrete boxcar,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,kernel_weight,0.06666666666666667,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,logical_cpus,14,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,mask_response_atol,3.3333333333333334e-14,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,mask_response_rtol,2e-13,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,mask_sha256,6d9c54dee5660c46886f32d80e57e9dd0ffa57ee0cd2a762b036d9c8e0c3a33a,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,mask_spawn_key,"(1,)",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,master_seed,20261027,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,matplotlib_version,3.10.8,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,mean_atol,5e-12,signal_unit
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,mean_rtol,2e-12,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,missingness_pattern,complete,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,mode,full,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,n_missing_inputs,0,cells
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,n_original_observed,200,cells
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,netCDF4_version,1.7.4,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,noise_distribution,"independent Normal(0,noise_std); step intentionally noiseless",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,noise_reuse,same realization across the five mask patterns,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,noise_spawn_key,"(0,)",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,noise_std,1.0,signal_unit
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,numpy_variance_reference,explicit centered squared residuals over valid reflected window positions,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,numpy_version,2.4.4,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,original_figure_sha256,b77178006d1072f97f530df8d2516e89c90f390d2d8bd6579a2f9430a29b3f41,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,original_plotting_source_sha256,19bc71f781559193cb730cf7d0dddfbf1c06394d15a930d04561dd97c4f03f43,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,periodic_backend,released explicit smooth_polar RFFT; coordinates=polar; axis_types=['linear']; boundary=['periodic']; width_units=grid; filter_axes=[0],
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,platform,macOS-26.7.2-x86_64-i386-64bit,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,psutil_version,7.2.2,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,python_executable,/Users/java1127/anaconda3/envs/dct-publish/bin/python,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,python_version,3.11.13,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,random_missing_probability,not applicable,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,reference_variance,centered valid-window population residuals; ddof=0,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,references,"{""periodic"": ""numpy_wrapped_windows"", ""reflective"": ""numpy_symmetric_windows""}",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,reflective_backend,released Cartesian DCT-II; half-sample symmetric,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,regions,all; edge=first/last7; left_edge=first7; right_edge=last7; gap=originally missing,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,replicate,0,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,replicate_scope,only trend_sine replicate0 complete and middle_gap; no replicate inference,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,requested_width,15,cells
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,restoration,False,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,restore_input_nan,False,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,retained_figure,Figure 2 retained; profiles revalidated without exporting,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,review_sources_sha256,"{""_review_common.py"": ""a8520fd9ca1306ff289dca46a278f3eb047608d0fa86f2231461da400a48b17f"", ""_review_figures.py"": ""b93d58ee7d36c707f434c529053f254b22117122da8cb1157ca1e6d14a2167a6"", ""_review_v2_common.py"": ""aa8d21499b2b17510f08205e46fdc084dcea3d333a903690f548d713845fe317"", ""generate_1d_boundary_comparison.py"": ""1eb251b879172449b4428bb8595382bd75fb39328988149acbbb5d4dd517ede2"", ""generate_1d_boxcar_validation.py"": ""bf445a42560ae32e4db2dcf108c2f661a1f5e41f3fc142af585d8f4b347621bd"", ""run_review_v2.py"": ""8b4ba59856d5eb3592a97b17590ea974ec746e246c7297512c398fd01ee09118""}",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,rng,NumPy default_rng / PCG64,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,scipy_version,1.17.1,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,script,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO/experiments/scripts/run_review_v2.py,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,script_sha256,8b4ba59856d5eb3592a97b17590ea974ec746e246c7297512c398fd01ee09118,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,seed_sequence_entropy,"[20261027,0,0]",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,signal,trend_sine,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,signal_formula,1.2*x + 2.5*sin(1.5*x),
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,signal_formula_source,"generate_1d_boundary_data.py inspected, not imported; only trend_sine inherited",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,signal_seed_id,0,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,signal_units,arbitrary signal_unit,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,std_atol,7.0710678118654756e-06,signal_unit
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,std_rtol,2e-11,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,std_tolerance_reason,atol=sqrt(variance_atol) near zero; variance separately checked,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,support_atol,5e-13,nominal_cells
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,support_definition,"clip(raw mask response,0,1)*M; not statistical ESS or distinct observations",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,support_rtol,2e-13,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,toolkit_controls,_stable_fallback=False; _denominator_floor=1e-3,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,toolkit_source_sha256,"{""__init__.py"": ""a4454641a8c93d555301501f137e1e6fd0b78ab4fc66cd86f6d2cdbd539a6472"", ""_gaussian.py"": ""cb5fdab4a190ab3bbd951d8c1b8a5185da33529739cd8d9feec9a8f2cbeb9bab"", ""_geometry.py"": ""6c362987e910c90c5d47f4a6888deff624afbba2eb53af0a769cb54304561e68"", ""_kernels.py"": ""78a2148715ec21f8b9b7e777d722072278eb91d1fd11a7a43b368c60a5e9593b"", ""_widths.py"": ""908ea06bafadbd4b208d948cb13909ec22652a444a3f5582dbd4fe828f2e211c"", ""cartesian.py"": ""7925aab9a38634c2168803e27087d8c548cf4209dd06284dd9b5a90bcf07ef39"", ""core.py"": ""6b6499c5e6661afbb9393a86070716eeca85722fc789e1203c165d24ac999831"", ""gap_filling.py"": ""58b45f3c26ae63d8d665e349fc3fdc46b2dfad41f83227d5b1b43814413eebb3"", ""polar.py"": ""9a4ebc4eb7b4b3b80363d921870e7787ef9da425259f70ea036cabc43d2fd4be"", ""stats.py"": ""e6bc3d21739b6725256f0300b397d4528061ae1bea911cc476b64b7c7476273c""}",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,toolkit_source_verification,SHA-256 of all ten v2.0.0 Python source files,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,truncated_baseline,"NumPy: clip each centered window to the input domain, retain finite observations, renormalize by their count; centered population variance; no exterior padding",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,truncated_coverage,finite observations / in-domain window positions; not valid / nominal width,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,truncated_equivalent_count,nominal width * coverage; not actual count near shortened outer windows,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,truth_identity,"1.2*t+2.5*sin(1.5*t); t=np.linspace(0,10,200)",
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,truth_sha256,078c194b5434995071b70465b2257d9aead659e9660c425d584a36285038f507,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,truth_target,direct mean vs known clean signal; same accepted sets for both boundaries,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,valid_mask,np.isfinite(input); invalids explicitly replaced by zero for filtering,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,variance_atol,5e-11,signal_unit^2
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,variance_convention,population ddof=0; negative raw-moment variance clamped at zero,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,variance_rtol,2e-11,1
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,version_bridge,explicit runtime bindings; frozen numerical functions unchanged,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,working_directory,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO,
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,x_max,10.0,x_unit
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,x_min,0.0,x_unit
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,x_spacing,0.05025125628140704,x_unit
+release-v2-20261111,trend_sine_seed0_complete_n200_m15,xarray_version,2026.2.0,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,MKL_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,NUMEXPR_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,OMP_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,OPENBLAS_NUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,VECLIB_MAXIMUM_THREADS,1,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,actual_missing_fraction,0.2,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,array_size,200,cells
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,astropy_version,8.0.2,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,boundary,"[""periodic"", ""reflective""]",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,checks,Frozen v1 input/coverage/comparisons verified; ten v2 sources checked; unchanged numerical tolerances,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,command,"[""experiments/scripts/run_review_v2.py"", ""boundary"", ""--run-id"", ""release-v2-20261111""]",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,common_helper_sha256,aa8d21499b2b17510f08205e46fdc084dcea3d333a903690f548d713845fe317,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,comparison_target,numerical disagreement vs independent matching-boundary spatial windows,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,completion,False,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,cpu,i386,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,dct_toolkit_commit,7ff29e998dd1102d3fef2a84050402e86dc7ef67,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,dct_toolkit_source,/private/var/folders/nt/th92gg516gqbtqd8y3fqclv00000gp/T/opencode/cageo-v2-20261111/toolkit/dct_toolkit,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,dct_toolkit_version,2.0.0,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,denominator_floor,0.001,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,denominator_rule,finite raw mask response strictly > floor; no additive epsilon,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,discrete_width,15,cells
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,displayed_models,"[""periodic"", ""reflective"", ""truncated""]",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,dtype,float64,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,edge_region,first and last M//2=7 cells (14 total),
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,fallback_eligibility,denominator not accepted and any original finite observation in 1D domain,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,fft_boundary,symmetric pad by M//2; linear fftconvolve; valid crop,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,frozen_comparison.csv_sha256,d62e1a28fb14c6f0d6b46f6bb18cf1bca79b6f4ec14046c9126a31efcab86507,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,frozen_coverage.csv_sha256,44b6f5697055addf835af6bb61912ccffd65a01c7343d0948352f20880b67eaa,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,frozen_settings.csv_sha256,71d6302a2a0246e35f5e01229502d718cc2463f2016642b3d6aa736a29e9ac17,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,gap_filling,"disabled; eligibility reported, never executed",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,gap_interval,"[80,120)",index
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,gap_region,originally missing input cells; may overlap edge region,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,grid_endpoints,both included,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,inherited_case,trend_sine_seed0_middle_gap_n200_m15,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,inherited_run,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO/experiments/results/round1/1d_boxcar/lead-review-1d-20261027,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,inherited_saved_script_sha256,3148cb3740fecaa1cb6fa62f7f4dd443b8110456d5bd89aa85e3edf49abf97db,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,inherited_script_sha256,bf445a42560ae32e4db2dcf108c2f661a1f5e41f3fc142af585d8f4b347621bd,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,input_sha256,19bb742436b9636cbbbc80de9854a115f3f0ca5f213353aed578cdd680276d04,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,interior_comparison,"spectral results vs truncated NumPy on indices [7,193), full windows only; undefined cells excluded but counted; std near zero may amplify variance roundoff",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,kernel,centered odd discrete boxcar,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,kernel_weight,0.06666666666666667,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,logical_cpus,14,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,mask_response_atol,3.3333333333333334e-14,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,mask_response_rtol,2e-13,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,mask_sha256,9009d4d32c6ecf984688a63d16e7a7037439136c13744e66c6e26f17d595f10e,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,mask_spawn_key,"(1,)",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,master_seed,20261027,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,matplotlib_version,3.10.8,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,mean_atol,5e-12,signal_unit
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,mean_rtol,2e-12,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,missingness_pattern,middle_gap,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,mode,full,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,n_missing_inputs,40,cells
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,n_original_observed,160,cells
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,netCDF4_version,1.7.4,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,noise_distribution,"independent Normal(0,noise_std); step intentionally noiseless",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,noise_reuse,same realization across the five mask patterns,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,noise_spawn_key,"(0,)",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,noise_std,1.0,signal_unit
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,numpy_variance_reference,explicit centered squared residuals over valid reflected window positions,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,numpy_version,2.4.4,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,original_figure_sha256,b77178006d1072f97f530df8d2516e89c90f390d2d8bd6579a2f9430a29b3f41,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,original_plotting_source_sha256,19bc71f781559193cb730cf7d0dddfbf1c06394d15a930d04561dd97c4f03f43,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,periodic_backend,released explicit smooth_polar RFFT; coordinates=polar; axis_types=['linear']; boundary=['periodic']; width_units=grid; filter_axes=[0],
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,platform,macOS-26.7.2-x86_64-i386-64bit,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,psutil_version,7.2.2,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,python_executable,/Users/java1127/anaconda3/envs/dct-publish/bin/python,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,python_version,3.11.13,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,random_missing_probability,not applicable,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,reference_variance,centered valid-window population residuals; ddof=0,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,references,"{""periodic"": ""numpy_wrapped_windows"", ""reflective"": ""numpy_symmetric_windows""}",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,reflective_backend,released Cartesian DCT-II; half-sample symmetric,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,regions,all; edge=first/last7; left_edge=first7; right_edge=last7; gap=originally missing,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,replicate,0,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,replicate_scope,only trend_sine replicate0 complete and middle_gap; no replicate inference,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,requested_width,15,cells
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,restoration,False,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,restore_input_nan,False,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,retained_figure,Figure 2 retained; profiles revalidated without exporting,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,review_sources_sha256,"{""_review_common.py"": ""a8520fd9ca1306ff289dca46a278f3eb047608d0fa86f2231461da400a48b17f"", ""_review_figures.py"": ""b93d58ee7d36c707f434c529053f254b22117122da8cb1157ca1e6d14a2167a6"", ""_review_v2_common.py"": ""aa8d21499b2b17510f08205e46fdc084dcea3d333a903690f548d713845fe317"", ""generate_1d_boundary_comparison.py"": ""1eb251b879172449b4428bb8595382bd75fb39328988149acbbb5d4dd517ede2"", ""generate_1d_boxcar_validation.py"": ""bf445a42560ae32e4db2dcf108c2f661a1f5e41f3fc142af585d8f4b347621bd"", ""run_review_v2.py"": ""8b4ba59856d5eb3592a97b17590ea974ec746e246c7297512c398fd01ee09118""}",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,rng,NumPy default_rng / PCG64,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,scipy_version,1.17.1,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,script,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO/experiments/scripts/run_review_v2.py,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,script_sha256,8b4ba59856d5eb3592a97b17590ea974ec746e246c7297512c398fd01ee09118,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,seed_sequence_entropy,"[20261027,0,0]",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,signal,trend_sine,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,signal_formula,1.2*x + 2.5*sin(1.5*x),
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,signal_formula_source,"generate_1d_boundary_data.py inspected, not imported; only trend_sine inherited",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,signal_seed_id,0,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,signal_units,arbitrary signal_unit,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,std_atol,7.0710678118654756e-06,signal_unit
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,std_rtol,2e-11,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,std_tolerance_reason,atol=sqrt(variance_atol) near zero; variance separately checked,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,support_atol,5e-13,nominal_cells
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,support_definition,"clip(raw mask response,0,1)*M; not statistical ESS or distinct observations",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,support_rtol,2e-13,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,toolkit_controls,_stable_fallback=False; _denominator_floor=1e-3,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,toolkit_source_sha256,"{""__init__.py"": ""a4454641a8c93d555301501f137e1e6fd0b78ab4fc66cd86f6d2cdbd539a6472"", ""_gaussian.py"": ""cb5fdab4a190ab3bbd951d8c1b8a5185da33529739cd8d9feec9a8f2cbeb9bab"", ""_geometry.py"": ""6c362987e910c90c5d47f4a6888deff624afbba2eb53af0a769cb54304561e68"", ""_kernels.py"": ""78a2148715ec21f8b9b7e777d722072278eb91d1fd11a7a43b368c60a5e9593b"", ""_widths.py"": ""908ea06bafadbd4b208d948cb13909ec22652a444a3f5582dbd4fe828f2e211c"", ""cartesian.py"": ""7925aab9a38634c2168803e27087d8c548cf4209dd06284dd9b5a90bcf07ef39"", ""core.py"": ""6b6499c5e6661afbb9393a86070716eeca85722fc789e1203c165d24ac999831"", ""gap_filling.py"": ""58b45f3c26ae63d8d665e349fc3fdc46b2dfad41f83227d5b1b43814413eebb3"", ""polar.py"": ""9a4ebc4eb7b4b3b80363d921870e7787ef9da425259f70ea036cabc43d2fd4be"", ""stats.py"": ""e6bc3d21739b6725256f0300b397d4528061ae1bea911cc476b64b7c7476273c""}",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,toolkit_source_verification,SHA-256 of all ten v2.0.0 Python source files,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,truncated_baseline,"NumPy: clip each centered window to the input domain, retain finite observations, renormalize by their count; centered population variance; no exterior padding",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,truncated_coverage,finite observations / in-domain window positions; not valid / nominal width,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,truncated_equivalent_count,nominal width * coverage; not actual count near shortened outer windows,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,truth_identity,"1.2*t+2.5*sin(1.5*t); t=np.linspace(0,10,200)",
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,truth_sha256,078c194b5434995071b70465b2257d9aead659e9660c425d584a36285038f507,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,truth_target,direct mean vs known clean signal; same accepted sets for both boundaries,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,valid_mask,np.isfinite(input); invalids explicitly replaced by zero for filtering,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,variance_atol,5e-11,signal_unit^2
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,variance_convention,population ddof=0; negative raw-moment variance clamped at zero,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,variance_rtol,2e-11,1
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,version_bridge,explicit runtime bindings; frozen numerical functions unchanged,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,working_directory,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO,
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,x_max,10.0,x_unit
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,x_min,0.0,x_unit
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,x_spacing,0.05025125628140704,x_unit
+release-v2-20261111,trend_sine_seed0_middle_gap_n200_m15,xarray_version,2026.2.0,

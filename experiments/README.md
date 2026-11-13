@@ -1,5 +1,134 @@
 # Experiments
 
+The selected v2.0.0 runs and figure assets listed below are included in this
+archive. Dated verification checkpoints retain their original selections, test
+counts, and publication status; later publication does not change the recorded
+scientific files or measurement provenance.
+
+## Current release: v2.0.0
+
+New review computations use released **v2.0.0**, commit
+`7ff29e998dd1102d3fef2a84050402e86dc7ef67`. The release changes the default
+`gaussian` to the full normalized sampled Gaussian, evaluated to float64
+precision without a fixed spatial cutoff. The explicit `gaussian_spectral`
+option reproduces the former analytical response. PyPI and GitHub availability
+are verified; the conda-forge update is submitted, with build/review pending.
+
+The radar comparison intentionally keeps **four sigma in both implementations**
+to compare equivalent discrete filters. Standard spatial convolution means
+Python azimuth/range double loops in each ordered axis stage, with a NumPy dot
+product per neighbourhood. The same samples, repeated boundary contributions,
+strict finite raw `d>1e-3`, and three complete filters remain unchanged. These
+are experiment-local prepared implementations, **not** timings of the release's
+full-Gaussian statistics API. The full Gaussian needs no larger transforms or
+additional filtering passes on a fixed grid, but its response-preparation costs
+can differ; its end-to-end runtime is not measured. Auxiliary composed SciPy
+code and every old CSV row remain preserved, not selected in the radar tables.
+Unrelated Cartesian SciPy comparisons remain selected.
+
+### Version-specific execution
+
+`scripts/run_review_v2.py` reuses the frozen numerical functions through explicit
+bindings for release loading, environment/provenance recording, output-directory
+creation, and untimed fresh-worker launching. It does not edit the v1.0.0
+drivers or `_review_common.py`, or change cases, numerical tolerances, timers,
+preparation/filter counts, or missing-data policies. The wrapper rejects changed
+frozen source hashes. Each new worker verifies the ten released Python files
+and records both adapter and inherited-source hashes. The radar entry point
+does not execute the inherited analytical-Gaussian branches; do not run those
+old branches against the new default. Reproducing pre-2.0 Gaussian results
+requires the original runtime or explicit `gaussian_spectral`, not a version
+string substitution.
+
+New runs use `results/round1/v2.0.0/<experiment>/release-v2-20261111/`, separate
+from all older measurements:
+
+| Experiment | Experiment directory | Scope |
+|---|---|---|
+| 1D boxcar | `1d_boxcar` | Same 75 cases and original tolerances; no timing |
+| Boundary comparison | `1d_boundary_comparison` | Same two inputs; three treatments; Figure 2 profiles rechecked without export |
+| Radar Gaussian | `2d_radar_gaussian_double_loop` | W5/W15; four-sigma spectral/loop pair selected; SciPy retained as auxiliary evidence; five repetitions |
+| 3D wind | `3d_wind_boxcar` | Same eight timing cases and mandatory numerical controls; five methods; three repetitions |
+
+All four campaigns completed. The 1D run has 2,115 passing and 585
+no-comparable rows; the boundary pair has 90 passing and ten no-comparable
+rows, plus the original interior/truth/profile checks. The 3D run has 1,920
+passing and 390 no-comparable rows and 120 successful measurements. Radar has
+108 passing centered-reference comparisons, 36 passing spectral/loop comparisons,
+2,362 passing kernel checks, and 30 successful measurements. All numerical CSVs
+listed above match their predecessors exactly except for run IDs. Figure 2's
+profiles, Figure 3's nine spectral arrays, and Figure 4's full-volume and section
+array hashes reproduce; their existing exports remain unchanged.
+
+Fresh radar spectral/loop medians are **0.0798/3.8404 s at W5** and
+**0.0841/3.7916 s at W15**, with unrounded ratios
+`48.138432685166315` and `45.078972687668326`. Their maximum process RSS is
+248.9/252.4 and 235.2/250.1 MiB, respectively. Spectral preparation medians are
+22.70/23.22 ms; loop preparation is 6.34/6.46 ms, already included in totals.
+Auxiliary SciPy medians are 0.0666/0.0854 s, retained in CSVs rather than the
+selected radar tables. The new 3D maximum ratios are 46.6543 over NumPy,
+40.1756 over Astropy direct, and 5.4226 over Astropy FFT, all in `broad20`.
+Specialized SciPy is faster than DCT in all eight cases. Narrow-window Astropy
+direct and DCT now both round to 0.0315 s, with overlapping interquartile ranges;
+the manuscript no longer carries forward the older faster-Astropy statement.
+These are fresh host measurements, not evidence that v2.0.0 caused a speedup;
+the old measurements are not pooled or relabeled.
+
+Use an isolated extraction; do not change the external toolkit checkout:
+
+```bash
+PYTHON=/path/to/python3.11  # NumPy 2.4.4, SciPy 1.17.1, Astropy 8.0.2
+TOOLKIT_REPO=/path/to/dct_toolkit
+REVIEW_V2=$(mktemp -d)
+mkdir -p "$REVIEW_V2/toolkit"
+git -C "$TOOLKIT_REPO" archive 7ff29e998dd1102d3fef2a84050402e86dc7ef67 | tar -xf - -C "$REVIEW_V2/toolkit"
+export DCT_TOOLKIT_V2_SOURCE="$REVIEW_V2/toolkit"
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+# Run from the repository root; use a new run ID. Benchmarks must be sequential.
+"$PYTHON" -B experiments/scripts/run_review_v2.py boxcar1d --run-id my-v2-run
+"$PYTHON" -B experiments/scripts/run_review_v2.py boundary --run-id my-v2-run
+"$PYTHON" -B experiments/scripts/run_review_v2.py wind --mode all --run-id my-v2-run
+"$PYTHON" -B experiments/scripts/run_review_v2.py radar --run-id my-v2-run --scratch-root "$REVIEW_V2" # exact private radar input required
+"$PYTHON" -B -m pytest -q -p no:cacheprovider experiments/tests/test_review_v2.py
+```
+
+Figure 1 is refreshed separately with the full default, using the same field,
+mask, layout, palette, and crop. Its raw filters are checked against independent
+precision-level spatial sums and its moments against the released API:
+
+```bash
+"$PYTHON" -B experiments/scripts/run_review_v2.py visual --output-root /path/to/new-figure-directory
+```
+
+The selected export is `manuscript/figures/round1/v2.0.0/visual_pipeline/`, with
+vector PDF, 300-dpi PNG, and source/array hashes. Existing figure assets are never
+overwritten. Figures 2–4 retain their original export provenance; calculations
+are revalidated, rather than relabeling the original sidecars as v2.0.0 exports.
+The 1-GiB mean-only check and analytical-response radar studies retain explicit
+v1.0.0 provenance and are not remeasured or included in the new medians. No raw
+radar input is copied into either repository. The local standalone checkout is
+prepared separately; neither repository is committed or pushed by this work.
+
+Verification completed on 12 November 2026. The exact tagged toolkit passes
+all **988 package tests** independently. The source full-suite checkpoint has
+**499 passes and two pre-existing obsolete manuscript-preservation failures**;
+the two final table/asset checks added afterward also pass. The final standalone
+full suite has **497 passes, the same two failures, four expected history/path
+skips**, and the known radar-dependency warning. All **21 v2-specific checks**
+pass there. The manuscript builds to 33 pages with resolved citations/references
+and only the existing title-box warning; changed pages were inspected. All 203
+pre-refresh scientific files, original comments, and Personal notes are preserved.
+The two obsolete tests were not rewritten or waived, so the full suite is not
+claimed green. No new independent-agent review was performed for this refresh.
+
+## Historical v1.0.0 protocol and checkpoints
+
+The sections below preserve the earlier commands, selections, findings, and
+verification records. They require their original v1.0.0 runtime and are not
+instructions to relabel those results or to run old Gaussian calls with v2.0.0.
+The current release selection above supersedes their present-tense version and
+timing selections, not their scientific evidence.
+
 ## Retained submitted experiments
 
 Copied from `../../DCT_paper2/02_arXiv_Paper/`:
@@ -77,6 +206,17 @@ results, or figures:
 - `scripts/benchmark_2d_radar_statistics.py`: the separately authorized matched
   full-statistics radar benchmark. It preserves the earlier radar script and
   results, and does not regenerate Figure 3. See the protocol below.
+- `scripts/benchmark_2d_radar_discrete_gaussian.py`: a separate sampled-Gaussian
+  equivalence control, with an independent centered-residual variance reference
+  and a three-method benchmark. It does not replace the released analytical
+  Gaussian or any earlier saved result. See the protocol at the end of this file.
+- `scripts/benchmark_2d_radar_gaussian_double_loop.py`: the author-requested
+  explicit polar spatial baseline, with nested azimuth/range cell loops for
+  each ordered axis stage. The frozen campaign measures spectral filtering,
+  these loops, and composed SciPy convolutions together. The main manuscript
+  selects only spectral filtering and standard spatial convolution (the loops);
+  the equivalent SciPy implementation remains auxiliary evidence. No timed
+  source, earlier result, or Figure 3 is changed by that reporting selection.
 
 New files go under `results/round1/<experiment>/<run_id>/`. Each run has
 `comparison.csv` and `settings.csv`; timed runs also have `benchmark_runs.csv`
@@ -88,13 +228,14 @@ source hashes, and limitations are saved with each run. The plan's
 explain which operations are included. No benchmark plots are generated.
 
 Supporting CSVs include `coverage.csv` (1D), `support_diagnostics.csv` and
-`support_by_range.csv` (radar), and `application_counts.csv` (3D). The ordinary
-sampled SciPy Gaussian comparison was removed at the author's request because
-its discrete weights differed. New radar runs do not write
-`gaussian_approximation.csv` or spatial-reference timings. The full-weight
-spatial calculation uses exactly matching weights and remains a numerical
-reference only, not a practical spatial performance baseline. Old outputs are
-preserved in their original run directories but are not selected for the paper.
+`support_by_range.csv` (archived analytical-response radar), and
+`application_counts.csv` (3D). The earlier analytical-response campaign removed
+an unmatched sampled SciPy Gaussian comparison because its weights differed.
+The Gaussian-convolution experiments instead match the sampled kernels
+exactly, as described [below](#sampled-gaussian-equivalence-control). Their
+centered-residual reference remains untimed; practical spectral and spatial
+filtering are measured together. All earlier outputs are preserved in their
+original run directories without relabeling.
 
 ### Publication figures
 
@@ -106,12 +247,12 @@ CAGEO root:
 ```bash
 "$PYTHON" -B experiments/scripts/generate_visual_pipeline_figure.py
 "$PYTHON" -B experiments/scripts/generate_1d_boundary_comparison.py --figure-only
-"$PYTHON" -B experiments/scripts/generate_2d_radar_gaussian_validation.py --figure-only
+"$PYTHON" -B experiments/scripts/generate_2d_radar_discrete_gaussian_figure.py
 "$PYTHON" -B experiments/scripts/generate_3d_wind_boxcar_validation.py --figure-only
 ```
 
 These create paired PDF and 300-dpi PNG assets in
-`manuscript/figures/round1/{visual_pipeline,1d_boundary_comparison,2d_radar_gaussian,3d_wind_boxcar}/`,
+`manuscript/figures/round1/{visual_pipeline,1d_boundary_comparison,2d_radar_discrete_gaussian,3d_wind_boxcar}/`,
 each with `pdf/`, `png/`, and a `figure_settings.csv` sidecar. PDFs retain embedded
 vector text and axes; dense map cells are rasterized. The shared figure helper
 checks text bounds and records actual dimensions, plotting versions, display
@@ -139,9 +280,10 @@ fraction of the available in-domain positions, so a complete shortened edge
 window has coverage one. Nominal equivalent count is still `15*rho`, not the
 actual observation count in that shorter window. True signal and complete-input
 boundary zooms restore the original illustration's message; local standard
-deviation and coverage show the missing-data extension. Radar reproduces the natural-mask W15
-case on the full selected sweep before extracting central display cells, marking
-accepted negative raw variances separately from undefined moments. It requires
+deviation and coverage show the missing-data extension. Radar reproduces the
+selected Gaussian-convolution natural-mask W15 case on the full sweep before
+extracting central display cells, without the old analytical-filter red overlay.
+It requires
 the exact documented NetCDF file; `REAL_RADAR_PATH` may select its location, but
 a different input hash or sample-data substitution is rejected. Wind reproduces
 only `baseline20`, filters the complete 3D components, then draws observed/mean
@@ -149,7 +291,7 @@ only `baseline20`, filters the complete 3D components, then draws observed/mean
 display choice, not another filter. Each export
 verifies its input identity, fixed settings, defined-output masks, and applicable
 saved comparisons/diagnostics before writing assets. No benchmark or full-case
-validation campaign is run by `--figure-only`.
+validation campaign is run by these figure exports.
 
 The radar presentation restores **ChaseSpectral from cmweather 0.3.2** and the
 original **0–40 dBZ** scale for both observations and normalized mean. The palette
@@ -159,22 +301,24 @@ out-of-range values without changing the numerical arrays. The bottom std and
 coverage panels are square `[-10,10] km` viewports, marked by matching squares
 in the full maps. Their 188-gate mesh includes all four corners and is selected
 after full-sweep filtering, without resampling. This square is larger than the
-unchanged `R<=10 km` diagnostic region in Table 6: `zoom_*` metadata records its
-cell-center counts separately from the frozen radial `central_*` diagnostics.
-The square contains 99,973 accepted estimates and no negative raw variances;
-all 4,593 affected cells remain marked in the full std map. Only panel (c) has a
-red **Clamped** key, beside its shortened **Std** title and clear of the data.
-There is no global legend: the caption identifies gray missing observations in
-(a), gray undefined estimates in (b,c,e), and the red clamping condition
-$M_2<\mu^2$ in (c). The key identifies the unchanged clamp, not negative std or
-evidence of absent variability. Section 3.1 explains this limitation; the sidecar
-records the key location and the warning about zeros. Removing 0.4 inches of the
-top legend band gives a 6.5-by-7.4-inch export (1950-by-2220 pixels at 300 dpi),
-while retaining the 1.95-inch-square panels, physical spacing, and text sizes.
+`R<=10 km` diagnostic region in Table 6: `zoom_*` metadata records its cell-center
+counts separately from the radial `central_*` diagnostics. With the new Gaussian
+calculation, the square has 99,961 accepted estimates and the radial region has
+90,140. There is no red overlay or **Clamped** key: the caption identifies gray
+missing observations in (a) and undefined estimates in (b,c,e). Raw-variance
+diagnostics, including 66 tiny negative values over the full sweep and none in
+either central region, remain in the metadata rather than being emphasized on
+the maps. The 6.5-by-7.4-inch canvas (1950-by-2220 pixels at 300 dpi) retains the
+1.95-inch-square panels, physical spacing, and text sizes.
 Full-map and zoom std panels share **0–10 dBZ** limits with `extend="max"`;
-the 118 values above 10 dBZ remain unchanged (maximum 10.6708 dBZ), with
+the new calculation has 118 values above 10 dBZ (maximum 10.6708 dBZ), with
 saturation counts and actual extrema recorded in the sidecar.
-Historical figures and all saved numerical results are unchanged.
+The generator verifies all ten selected result-file hashes, the frozen numerical
+source hashes, and all nine W15 returned-array hashes before drawing. It never
+changes result CSVs, reruns the centered reference, or repeats timings. The
+previous analytical-response figure and generator remain unchanged in
+`round1/2d_radar_gaussian/` and `generate_2d_radar_gaussian_validation.py`; the
+legacy `--figure-only` command reproduces that archived version, not Figure 3.
 
 The four-panel wind figure restores the original 22°/35° 3D perspective and
 viridis vector-magnitude colors, using a common `(z,y,x)` lattice with strides
@@ -279,12 +423,13 @@ Its figure tests use temporary
 output directories and do not alter the frozen CSVs or generate new timing
 measurements. The known nonfatal NumPy/netCDF compatibility warning remains.
 
-### Matched radar-statistics benchmark
+### Archived analytical-response radar-statistics benchmark
 
-The 2026-11-02 comparison below is retained unchanged as earlier FFT/direct
-evidence. The current main comparison adds a NumPy range-gate loop in a separate
-script and run; see **Range-adaptive loop comparison** below. Do not combine a
-new NumPy time with an older prepared-spectral median.
+The 2026-11-02 comparison below is retained unchanged as analytical-response
+FFT/direct evidence. The later NumPy range-gate loop comparison is also archived
+below. Current manuscript Tables 6 and 11 instead select the sampled-Gaussian
+run described at the end of this file. Do not combine medians across these runs
+or attribute analytical-response speedups to the current Gaussian convolution.
 
 The separate `benchmark_2d_radar_statistics.py` uses the same documented
 `720x1180` sweep, natural mask, middle-quarter controlled removal, and nominal
@@ -347,8 +492,8 @@ FFT implementation, the speedups are **1.49–1.57** and 1.49–1.75, respective
 Speedup means the baseline's median time divided by the prepared implementation's
 median, using unrounded measurements. These factors apply only to the same full
 finite-grid weights, not ordinary sampled/truncated Gaussian smoothing or all
-NumPy/SciPy functions. These were the earlier Table 11 results; current
-manuscript Table 11 uses the newly measured NumPy/SciPy loop comparison below.
+NumPy/SciPy functions. These were earlier Table 11 results; neither this run nor
+the subsequent analytical-response loop comparison supplies the current table.
 Individual measurements, quartiles, worker input/output hashes, filter counts,
 source hashes, and environment settings remain in this preserved run's four CSVs.
 At that checkpoint, the abstract reported the natural-mask speedups against
@@ -369,7 +514,7 @@ export RADAR_BENCHMARK_RESULT_DIR=experiments/results/round1/2d_radar_statistics
 "$PYTHON" -B -m pytest -q -p no:cacheprovider experiments/tests
 ```
 
-### Range-adaptive loop comparison
+### Archived analytical-response range-adaptive loop comparison
 
 `scripts/benchmark_2d_radar_range_loops.py` compares **our prepared spectral
 calculation versus these range-adaptive loop implementations** on the same
@@ -424,7 +569,7 @@ After preparing the exact-source environment below, run from the CAGEO root:
 Existing run directories cannot be overwritten. `--validate-only` performs
 correctness checks without timings. Results use the four existing CSV schemas
 under `results/round1/2d_radar_range_loops/<run_id>/`. Set `RADAR_LOOP_RESULT_DIR`
-to the selected loop run for its saved-evidence and current-manuscript checks;
+to the selected loop run for saved-evidence and archived-manuscript checks;
 keep `RADAR_BENCHMARK_RESULT_DIR` set to the earlier run to test its preserved
 source/results. Unit tests use tiny controls and never launch a radar campaign.
 
@@ -438,15 +583,15 @@ cases, prepared medians are `0.0530–0.0544` s, NumPy-loop medians
 `0.8495–0.8580` s, and SciPy-loop medians `2.6412–2.6573` s. Prepared spectral
 calculation is **15.7–16.2 times faster than the NumPy loop** and **48.6–49.9
 times faster than the SciPy loop**. The natural-mask subset gives 15.7–15.8 and
-48.6–49.4, respectively; the revised Abstract summarizes these as approximately
-16 and 49 times faster for prepared computation of all three statistics.
-Table 11 gives each case's speedup from unrounded medians, time, and RSS;
-Section 5.3 retains the smaller earlier SciPy FFT
+48.6–49.4, respectively; at checkpoint `c4924a4`, the Abstract summarized these
+as approximately 16 and 49 times faster for prepared computation of all three
+statistics. That checkpoint's Table 11 gave each case's speedup, time, and RSS;
+the performance section retained the smaller earlier SciPy FFT
 speedups separately, without mixing the two timing campaigns. These findings
 concern the tested range-adaptive loops with full finite-grid weights, not all
 NumPy/SciPy algorithms or ordinary sampled/truncated Gaussian smoothing.
 
-To test both frozen radar runs and the current manuscript without rerunning
+To test both frozen radar runs and their archived manuscript reporting without rerunning
 timings, add these to the existing selected-run environment:
 
 ```bash
@@ -645,3 +790,385 @@ as equivalent-method performance evidence for the paper.
 The check of the frozen release ran its 786 bundled tests successfully. This
 checks the released software; it is not evidence of accuracy or speed on the
 new experimental inputs.
+
+### Sampled Gaussian equivalence control
+
+The author approved this separate control on 2026-11-10 to distinguish exact
+discrete-kernel equivalence from agreement between two implementations of the
+analytical Gaussian response. It uses only the original `720 x 1180` COW sweep
+and `W=5,15`; no new controlled-gap or denominator-sensitivity cases are added.
+The released toolkit, earlier radar scripts and measurements, and archived
+analytical-response figure remain unchanged.
+
+For every range gate, the angular standard deviation is
+`sigma = W / ((j+1) * azimuth_spacing_radians * sqrt(12))`; the range standard
+deviation is `W/sqrt(12)`. The new discrete kernel samples
+`exp(-0.5*(offset/sigma)**2)` at integer offsets from `-ceil(4*sigma)` through
+`+ceil(4*sigma)`, then normalizes their sum to one. This explicitly chosen
+four-sigma support is used identically by both discrete methods; it is not a
+claim of equality to the continuous analytical response. Astropy 8.0.2
+`Gaussian1DKernel` with the same explicit size and `mode='center'` independently
+checks every kernel outside the timed calculation.
+
+The discrete spectral response is the finite cosine sum of these weights.
+The implementation constructs it efficiently by accumulating all offsets on a
+periodic grid and transforming that grid. Periodic azimuth uses period `N_az`;
+half-sample reflective range uses period `2*N_range` and its first `N_range`
+cosine modes. Kernels wider than an axis retain all repeated boundary
+contributions; no kernel-width cap or minimum-one width is applied.
+
+The untimed reference calculates centered angular variances from nonnegative
+squared residuals, then combines within- and between-angular-mean variation
+along range. The angular mask responses remain in those range weights, so this
+is the same complete azimuth-first/range-second estimator, not sequentially
+normalized smoothing. It checks every output cell without FFTs, DCTs,
+convolution calls or subtraction of raw moments. Small tests also enumerate
+each original donor independently, including repeated wrap/reflection, odd and
+even axis lengths, singleton axes, missing values, zeros and a single donor.
+
+Correctness requires the original radar tolerances and identical defined-output
+masks for the discrete spectral and spatial methods. Raw variance is checked
+before clamping, including its minimum and negative-value counts. Near zero,
+the square root magnifies tiny variance differences: as in the existing 3D
+checks, std uses the square-root variance bound only where the reference variance
+is at most the fixed variance absolute tolerance. Nonzero-variance std checks,
+all variance checks and analytical released-API checks keep their original
+tolerances. Analytical-versus-sampled results are saved separately as
+`different_operator`, not misclassified as failed numerical implementations.
+
+The three timed methods are `analytical_spectral` (the unchanged prepared
+released analytical response), `discrete_spectral` (the exact sampled-kernel
+response), and `discrete_spatial` (SciPy `convolve1d`, wrap in azimuth and reflect
+in range). Each prepares once and filters the original mask, zero-filled data,
+and squared data before normalization. Every timing includes kernel/response
+preparation and all common statistics/allocations. Preparation is also recorded
+as a subset of total time, not added to it. Imports, input reading, independent
+verification and output fingerprints are excluded. Five fresh sequential
+workers per method/width use identical imports and requested one-thread limits;
+method order rotates without warm-up. Worker checks enforce source/input/output
+hashes and actual preparation/filter counts before a timing is accepted.
+Process RSS follows the earlier 1-ms plus newly exceeded lifetime-peak protocol.
+
+After setting up the pinned runtime as above, run from the CAGEO root:
+
+```bash
+export OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1
+export VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1
+"$PYTHON" -B -m pytest experiments/tests/test_radar_discrete_gaussian.py -q
+"$PYTHON" -B experiments/scripts/benchmark_2d_radar_discrete_gaussian.py \
+  --run-id radar-discrete-gaussian-20261110
+```
+
+`--validate-only` skips timing. Every run creates a new directory under
+`results/round1/2d_radar_discrete_gaussian/` and refuses to overwrite an existing
+run. Compact outputs are `agreement_summary.csv` (four full-sweep/near-radar
+rows) and `timing_summary.csv` (two width rows). Detailed correctness checks,
+operator differences, raw-variance diagnostics, kernel checks, individual
+timings/preparation times, RSS and provenance remain in the accompanying files.
+Set `DISCRETE_GAUSSIAN_RESULT_DIR` to a completed run to enable the saved-result
+tests. This retained control run and its findings follow below; the later
+explicit-loop run supplies the current tables and timing comparison.
+
+#### Retained Gaussian control run and findings (2026-11-10)
+
+The retained control run is
+[`radar-discrete-gaussian-20261110`](results/round1/2d_radar_discrete_gaussian/radar-discrete-gaussian-20261110/).
+All **90 correctness comparisons**, **2,362 kernel checks** and **30 fresh-worker
+measurements** pass. These are new measurements, not medians reused from an
+earlier run. The host is an Apple M4 Pro (`Mac16,7`) with 24 GiB RAM; Python is
+x86_64 under Rosetta 2, with the requested one-thread settings described above.
+
+The four-row agreement summary below pools the maximum mean and **unclamped**
+variance differences of both discrete methods against the independent centered
+reference. Minimum raw variance and negative counts refer to the discrete
+spectral method. Mean differences have dBZ units; variance quantities have
+dBZ-squared units. Near radar means range at most 10 km, evaluated after the
+complete sweep was filtered.
+
+| W | Region | Defined | Max mean difference | Max variance difference | Minimum raw variance | Negative raw count |
+|---|---|---:|---:|---:|---:|---:|
+| 5 | Full sweep | 574592 | 2.11e-11 | 8.69e-10 | -7.22e-11 | 52 |
+| 5 | Near radar | 77889 | 1.78e-11 | 7.88e-10 | 0.742 | 0 |
+| 15 | Full sweep | 640682 | 1.76e-11 | 4.39e-10 | -1.81e-10 | 66 |
+| 15 | Near radar | 90140 | 3.17e-12 | 1.80e-10 | 3.67 | 0 |
+
+The centered reference is nonnegative by construction. The largest discrete
+spectral raw negative has magnitude about `1.81e-10` dBZ-squared; the direct spatial
+raw negatives are at most `5.68e-14`. Neither discrete method has a negative
+value beyond the fixed variance comparison tolerance. This is not a claim of
+exactly zero floating-point negatives: the reported std remains nonnegative
+because the common reporting rule clamps raw negative moment differences.
+
+Median total times in milliseconds, over five repetitions including preparation:
+
+| W | Analytical spectral | Discrete spectral | Discrete spatial |
+|---|---:|---:|---:|
+| 5 | 65.1 | 89.1 | 67.8 |
+| 15 | 63.8 | 87.9 | 87.7 |
+
+Median preparation times are 2.72/2.78 ms for the analytical response,
+23.75/24.55 ms for the discrete spectral method, and 6.44/6.67 ms for the
+discrete spatial method (`W=5/15`). The analytical response has the lowest
+observed total medians, but its W5 timing interquartile interval overlaps the
+discrete spatial interval. Five repetitions and two widths do not establish a
+general ranking. The exact discrete spectral method is slower than the direct
+spatial method at W5 and has a similar median at W15.
+
+The analytical response is **not the same discrete estimator**. It has 13,322
+and 4,593 negative raw variances, with minima `-1771.898` and `-3645.103`
+dBZ-squared for W5 and W15. A separate test reproduces these large negative
+values with independently constructed cosine-sum spatial weights and an
+explicit centered-residual sum at the worst location for each width. They are
+not merely raw-moment cancellation. Analytical-versus-discrete timing ratios
+must therefore not be described as speedups for an identical Gaussian kernel.
+`kernel_comparison.csv` keeps their numerical and output-coverage differences
+separate from the passing discrete-kernel equivalence checks.
+
+At the experiment-only checkpoint, all 41 new tests passed with selected-run
+checks enabled. That broader suite reported **409 passed, 15 skipped, two previously identified stale
+manuscript-preservation failures**, and one binary-compatibility runtime warning
+while importing the radar input dependencies. The numerical driver and saved
+timing source hashes remain unchanged during the later manuscript integration.
+
+#### Earlier manuscript integration and retained Figure 3 (2026-11-10)
+
+At this checkpoint, the author approved using Gaussian convolution as the main
+radar example. Section 2.2 now defines the sampled kernel and its cosine
+response, and Section 4.1 distinguishes the experiment-specific implementation
+from released v1.0.0. That checkpoint's Table 6 used the four pooled
+centered-reference agreement rows, and Table 11 used spectral/spatial Gaussian
+convolution plus the different analytical response. The 2026-11-11 explicit-loop
+comparison below replaces those table/timing selections, not the Gaussian
+definition or Figure 3. Earlier analytical-response gap/floor checks are archived,
+not relabeled as tests of the current kernel.
+
+`generate_2d_radar_discrete_gaussian_figure.py` reproduces the new W15 spectral
+outputs for Figure 3 after verifying every evidence/source/output hash. Its
+PDF, 300-dpi PNG, and metadata are under
+`manuscript/figures/round1/2d_radar_discrete_gaussian/`. The six maps retain the
+previous palette, scales, panel sizes, and square zooms, without the analytical
+filter's red overlay or clamping key. The old figure and its generator remain
+unchanged. To check the selected numerical evidence and new manuscript/figure:
+
+```bash
+export DISCRETE_GAUSSIAN_RESULT_DIR=experiments/results/round1/2d_radar_discrete_gaussian/radar-discrete-gaussian-20261110
+"$PYTHON" -B -m pytest -q experiments/tests/test_radar_discrete_gaussian.py \
+  experiments/tests/test_radar_discrete_gaussian_manuscript.py
+```
+
+At this checkpoint, all 63 focused tests passed, including byte-identical
+reproduction of the new PDF, PNG, and sidecar. With all selected-result
+environments enabled, the full suite reported **454 passed**, the same two obsolete manuscript-preservation
+failures, and one radar-dependency runtime warning. The prescribed `latexmk`
+build has 33 pages, resolved citations/references, and only the pre-existing
+title-box warning. Table 6, Figure 3, and Table 11 are on pages 20, 21, and 27.
+
+The requested independent scientific/writing reviewer reconstructed full-array
+centered-residual references independently of the experiment's reference
+routine, verified all nine output hashes for every method/case, reaggregated
+both tables and preparation costs, reproduced the exports, and inspected the
+figure and compiled pages. Its three refinements—release-specific signed-weight
+qualification, explicit variance tolerances, and an overflow fix—are implemented;
+the follow-up found no blocker. No numerical source, saved result, earlier
+figure, or timing measurement changed during integration. The new sources,
+results, and figure had not yet been copied or pushed to the separate public
+experiment repository at that checkpoint.
+
+### Explicit polar Gaussian double-loop comparison
+
+The main radar presentation selects spectral filtering versus **standard spatial
+convolution**, defined for this experiment as the explicit Python double-loop
+implementation with NumPy neighbourhood dot products. This two-method selection
+simplifies the main tables and summaries. The composed SciPy implementation was
+verified to compute equivalent statistics and remains archived auxiliary evidence;
+its omission does not imply that SciPy cannot implement the polar operator or
+that an explicit double loop is the only spatial algorithm. Reported speedups
+apply specifically to the stated Python implementation, not optimized spatial
+filtering generally. Unrelated 1D/3D SciPy comparisons remain unchanged.
+
+This decision changes only reporting. The frozen driver, its source identity,
+and every CSV row remain intact, including all three methods' checks and all
+30 worker measurements. Table 11 selects the 20 spectral/double-loop measurements
+from that campaign; no experiment is rerun and no measurements are deleted or
+combined across runs. Table 6's values and Figure 3 remain unchanged. Table 1
+and Section 2.2 additionally define `ell` as the integer kernel-center offset
+along the filtered axis, in grid cells; this notation clarification changes no
+kernel or response.
+
+The author clarified that the main polar comparison should use an explicit
+spatial implementation, not describe composed one-dimensional SciPy routines
+as a ready-made polar filter. The new
+`benchmark_2d_radar_gaussian_double_loop.py` keeps the original sweep, W5/W15,
+sampled Gaussian kernels, width conversion, boundaries, strict raw `d>1e-3`,
+three-filter workload, and output policies unchanged.
+
+The explicit implementation prepares the Gaussian weights once. For each
+complete filter, it wrap-pads each range gate's azimuth column and visits every
+`(azimuth, range)` output in nested Python loops. Each cell is a `numpy.dot`
+over its gate-specific one-dimensional Gaussian neighbourhood. It then pads
+the angular result along range using NumPy `symmetric` padding (half-sample
+reflection) and again visits every cell in nested loops for the range dot
+product. Neither stage calls convolution routines or spectral transforms.
+This preserves the angular-first operator; it is not a stationary 2D kernel
+using the target range's angular width for all contributing gates. Boundary
+support wider than an axis retains every repeated contribution.
+
+The complete filter acts separately on the mask, zero-filled observations, and
+their squares, with normalization only after both stages. Runtime cell-update
+counters verify `3*N_az*N_range` assignments in each stage. Preparation,
+padding, all three filters and returned statistics/allocations are timed.
+The timed loops use NumPy dot products, not scalar Python loops over kernel
+weights; this is an implementation-specific comparison, not the intrinsic
+cost of every spatial algorithm.
+
+Both the explicit loops and spectral filtering are checked over the full sweep
+against the independent centered-residual reference. The main four-row summary
+uses **direct spectral-minus-double-loop discrepancies** before variance
+clamping; `comparison.csv` separately keeps all three methods' centered-reference
+checks, including the now-auxiliary SciPy implementation using exactly the same
+kernels. No claim about the absence of equivalent library implementations is
+needed. Every spectral array must also match the previous Gaussian run's saved
+hashes, so Figure 3 is not regenerated for this baseline change.
+
+After setting up the pinned runtime and one-thread limits above:
+
+```bash
+"$PYTHON" -B experiments/scripts/benchmark_2d_radar_gaussian_double_loop.py \
+  --run-id radar-gaussian-double-loop-reproduction
+```
+
+Only a new run directory under `results/round1/2d_radar_gaussian_double_loop/`
+is written; existing runs are never overwritten. Five fresh sequential workers
+per method/width rotate method order without warm-up, preload identical
+libraries, and verify participating sources, input bytes, all nine output
+arrays, and actual filter/cell counts. Individual times, preparation times,
+total process RSS, and comparison settings remain in the run. New spectral
+medians are never combined with an older loop or SciPy median. The numerical
+driver does not publish or synchronize repositories.
+
+#### Selected explicit-loop run and findings (2026-11-11)
+
+The selected run is
+[`radar-gaussian-double-loop-20261111`](results/round1/2d_radar_gaussian_double_loop/radar-gaussian-double-loop-20261111/).
+All **108 centered-reference comparisons**, **36 direct spectral/loop
+comparisons**, **2,362 kernel checks**, and **30 fresh-worker measurements**
+pass. The measured grid is the original `720x1180` sweep with its natural mask,
+at W5/W15 and strict finite raw `d>1e-3`, without completion or mask restoration.
+No new gap, floor-sensitivity, scaling, or recovery study was run.
+
+The current Table 6 uses the following direct spectral-minus-loop differences,
+not the preceding control's pooled centered-reference differences. Mean has
+dBZ units and raw variance has dBZ-squared units. Full sweep and near radar
+contain 849,600 and 95,760 cells, respectively; near radar means range at most
+10 km after full-sweep filtering.
+
+| W | Region | Defined | Max mean difference | Max raw-variance difference |
+|---|---|---:|---:|---:|
+| 5 | Full sweep | 574592 | 2.12e-11 | 8.69e-10 |
+| 5 | Near radar | 77889 | 1.78e-11 | 7.88e-10 |
+| 15 | Full sweep | 640682 | 1.76e-11 | 4.39e-10 |
+| 15 | Near radar | 90140 | 3.18e-12 | 1.81e-10 |
+
+Separate centered-reference maxima are `2.11e-11` dBZ for spectral mean and
+`8.69e-10` dBZ-squared for spectral raw variance; explicit-loop raw variance
+differs by at most `1.61e-12` dBZ-squared. The spectral raw minima remain
+`-7.2248e-11` and `-1.8116e-10` dBZ-squared at W5/W15, with no negatives beyond
+the variance tolerance. The largest spectral std discrepancy against the
+centered reference is `1.8444e-5` dBZ near zero variance, assessed with the
+previously documented square-root bound; raw-variance tolerances are unchanged.
+These numerical negatives remain distinct from the substantial analytical-
+response negatives preserved in the preceding control.
+
+The current Table 11 selects the following medians and maximum total process
+RSS from the frozen run, each from five fresh-worker repetitions including
+preparation and padding. Standard spatial convolution is the explicit Python
+double-loop implementation:
+
+| W | Spectral (s) | Standard spatial (s) | Spectral RSS (MiB) | Standard spatial RSS (MiB) |
+|---|---:|---:|---:|---:|
+| 5 | 0.0932 | 3.8925 | 257.9 | 252.2 |
+| 15 | 0.0876 | 3.9330 | 251.9 | 246.2 |
+
+Loop/spectral ratios from unrounded medians are `41.764725652689826` and
+`44.894399362975115`, reported as 41.8 and 44.9. They describe this explicit
+Python-cell-loop implementation with NumPy dot products, not an intrinsic
+speedup over all spatial convolution. Median preparation times in
+spectral/standard-spatial order are `23.61/6.76` ms at W5 and `23.67/7.12` ms
+at W15; these are subsets
+of total time, not extra costs. Per-filter padding is included in the total,
+not in the preparation submeasurement. Hardware, Rosetta, RSS-sampling, and
+five-repetition limitations remain as documented above.
+
+#### Archived auxiliary SciPy evidence
+
+The same frozen run retains `discrete_spatial`, the composed SciPy implementation,
+in `comparison.csv`, `benchmark_runs.csv`, `benchmark_summary.csv`,
+`benchmark_phases.csv`, `timing_summary.csv`, and `settings.csv`. It is numerically
+equivalent to the selected polar operator: all of its centered-reference checks
+pass, with maximum mean and raw-variance discrepancies of `4.62e-14` dBZ and
+`2.06e-12` dBZ-squared. Its kernel/worker/output identities and every recorded
+time, preparation cost, and RSS value remain testable. The saved summary files
+still describe the original three-method campaign, not a rewritten two-method
+campaign. This material is auxiliary rather than selected main-table evidence;
+it must not be deleted or relabeled as invalid to justify the reporting choice.
+
+#### Verification and standalone preparation
+
+Enable both Gaussian saved-result suites when checking the current numerical,
+manuscript, and retained-figure evidence:
+
+```bash
+export DISCRETE_GAUSSIAN_RESULT_DIR=experiments/results/round1/2d_radar_discrete_gaussian/radar-discrete-gaussian-20261110
+export GAUSSIAN_DOUBLE_LOOP_RESULT_DIR=experiments/results/round1/2d_radar_gaussian_double_loop/radar-gaussian-double-loop-20261111
+"$PYTHON" -B -m pytest -q experiments/tests/test_radar_discrete_gaussian.py \
+  experiments/tests/test_radar_discrete_gaussian_manuscript.py \
+  experiments/tests/test_radar_gaussian_double_loop.py
+```
+
+All 88 focused tests pass after the reporting/notation update. The full
+selected-result source suite reports **479 passed**, the same two obsolete
+manuscript-preservation failures, and the
+known radar-dependency runtime warning. A full-suite interaction in the new
+in-process worker unit tests was corrected with a test-only memory allowance
+and deliberate below-RSS rejection checks; neither the numerical driver nor
+the actual fresh-worker 1024-MiB limit or saved measurements changed.
+
+The prescribed 33-page build has resolved citations/references and only the
+existing title-box warning; Tables 6/11 and Figure 3 are on pages 20/27 and 21.
+The direct repository URL is retained in Section 5.1, with an explicit statement
+that the new Gaussian sources/results are not yet in the public archive.
+The preceding independent numerical review reproduced all six method/width calculations and
+their nine output hashes, all centered-reference/direct comparisons, and the
+actual full-sweep loop cell counts. It verified kernel/source/input identities,
+distinct matched workers, all raw table/preparation/RSS aggregations, unchanged
+Figure 3, and the qualified writing. Its availability-wording and URL-layout
+corrections are implemented; final actual-page inspection confirmed the full
+clickable URL within the margins and no remaining scoped blocker. No timing
+campaign was repeated during that review.
+
+The two-method reporting selection and `ell` definitions add no numerical
+calculation or timing campaign. The rebuilt manuscript still has 33 pages,
+with Table 1 on page 4, Eq. (5) on page 5, Table 6 on page 20, Figure 3 on
+page 21, and Table 11 on page 27. The independent reviewer confirmed the updated
+terminology, notation, two-method selection, preserved non-radar content, and
+actual layout, and independently reaggregated the selected time/RSS/preparation
+values and 41.8/44.9-times ratios. Its documentation review confirmed the rationale
+and preservation of equivalent SciPy evidence. The sole response-location
+refinement was implemented: zero-based sweep, fill-value decoding, and generator
+mask/QC details are attributed to the selected run's `settings.csv`, not to prose
+that Section 5.3 does not contain. Upstream radar QC remains unverified. No scoped
+scientific or layout blocker remains. Five final reporting/saved-result checks
+also pass in both checkouts after the optional wording refinement.
+
+The standalone checkout at `/Users/java1127/projects/cageo-d-26-01410-experiments`
+contains byte-identical copies of the 32 selected source/test/result/manuscript/
+figure files. Its existing compatibility `conftest.py` is preserved, with only
+three additional missing-`c4924a4` history checks handled separately. Its full
+suite reports **475 passed, two unchanged obsolete manuscript-test failures,
+four history/path skips**, and one warning. A separate portability run with no
+CAGEO history available reports **414 passed, 67 documented history/path skips**,
+and one warning. All new Gaussian numerical, saved-result, current-table, and
+figure-reproduction checks run in that portability test, apart from the one
+explicitly history-dependent old-figure preservation check. No raw radar data
+was copied. Both workspaces remain uncommitted and unpushed; public publication
+of the new Gaussian sources/results remains pending.

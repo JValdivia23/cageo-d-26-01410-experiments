@@ -15,6 +15,11 @@ A further test, ``test_selected_saved_evidence_and_assets``, compares the
 saved ``script`` setting against the recomputed absolute checkout path;
 that equality only holds in the original workspace location, so the test is
 skipped (with a location reason) whenever the checkout has been relocated.
+
+Three further archived-evidence checks use CAGEO commit ``c4924a4`` after
+the Gaussian manuscript replacement. Their own availability check skips only
+those three tests when that commit is absent; all new Gaussian numerical,
+saved-worker, current-manuscript, and figure-reproduction checks still run.
 """
 
 from __future__ import annotations
@@ -32,6 +37,16 @@ HISTORY_COMMITS = (
     "90faea45a4ee488679499a117be5e73470553e9e",
     "25ff03628d4c6feb02664223cd8fb6d7fb38cf1b",
 )
+GAUSSIAN_HISTORY_COMMIT = "c4924a4f0fd5f29edcbc36b2031bb62ad967a009"
+GAUSSIAN_HISTORY_TESTS = {
+    "test_radar_range_loops.py": (
+        "test_archived_analytical_manuscript_table_matches_times_speedups_and_rss",
+        "test_archived_analytical_manuscript_speedups_and_range_adaptive_loop_framing",
+    ),
+    "test_radar_discrete_gaussian_manuscript.py": (
+        "test_prior_analytical_figure_and_numerical_evidence_remain_unchanged",
+    ),
+}
 
 # Tests in test_review_outputs.py that call the history-backed
 # historical_script_source() / assert_recorded_script_source() guard.
@@ -56,10 +71,10 @@ HISTORY_TESTS_IN_TEST_BOUNDARY_COMPARISON = (
 GHOST_WIND_FIXTURES = ("evidence", "prepared", "drawing")
 
 
-def history_available() -> bool:
-    """Return True when all CAGEO history commits are present locally."""
+def history_available(commits=HISTORY_COMMITS) -> bool:
+    """Return True when all requested CAGEO history commits are present locally."""
     try:
-        for commit in HISTORY_COMMITS:
+        for commit in commits:
             result = subprocess.run(
                 ["git", "cat-file", "-e", f"{commit}^{{commit}}"],
                 cwd=REPO_ROOT, capture_output=True, timeout=30,
@@ -107,6 +122,16 @@ def pytest_collection_modifyitems(config, items):
                 fixtures = set(getattr(item, "fixturenames", ()) or ())
                 if fixtures & set(GHOST_WIND_FIXTURES):
                     item.add_marker(marker)
+    if not history_available((GAUSSIAN_HISTORY_COMMIT,)):
+        marker = pytest.mark.skip(
+            reason="standalone clone lacks CAGEO archived-evidence commit c4924a4 "
+            "(see repo README, 'How to verify'); run in CAGEO for the history comparison"
+        )
+        for item in items:
+            filename = item.nodeid.split("::", 1)[0].rsplit("/", 1)[-1]
+            test_name = item.nodeid.rsplit("::", 1)[-1]
+            if test_name in GAUSSIAN_HISTORY_TESTS.get(filename, ()):
+                item.add_marker(marker)
     # test_selected_saved_evidence_and_assets asserts the saved absolute
     # `script` path equals the current checkout path; it passes in the
     # original workspace and can only fail after relocation.

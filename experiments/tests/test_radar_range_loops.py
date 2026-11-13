@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import sys
+import subprocess
 from types import SimpleNamespace
 
 import numpy as np
@@ -238,8 +239,10 @@ def test_saved_time_and_rss_summaries_from_every_repetition():
 
 
 @pytest.mark.skipif(not RESULT, reason="set RADAR_LOOP_RESULT_DIR to selected range-loop comparison")
-def test_manuscript_table_quotes_new_times_speedups_and_rss():
-    text = (SCRIPTS.parents[1]/"manuscript/main.tex").read_text()
+def test_archived_analytical_manuscript_table_matches_times_speedups_and_rss():
+    # The current manuscript selects Gaussian convolution instead. Retain this
+    # check against the last manuscript that selected these analytical weights.
+    text = subprocess.check_output(["git", "show", "c4924a4:manuscript/main.tex"], cwd=SCRIPTS.parents[1]).decode()
     table = text.split("\\label{tab:radar_performance}")[1].split("\\end{table}")[0]
     indexed = {(r["case_id"], r["method"]): r for r in saved_rows("benchmark_summary.csv")}
     for pattern, label in (("natural", "Natural"), ("controlled_extra_gap", "Added gap")):
@@ -253,8 +256,8 @@ def test_manuscript_table_quotes_new_times_speedups_and_rss():
 
 
 @pytest.mark.skipif(not RESULT, reason="set RADAR_LOOP_RESULT_DIR to selected range-loop comparison")
-def test_manuscript_speedup_ranges_and_range_adaptive_loop_framing():
-    text = (SCRIPTS.parents[1]/"manuscript/main.tex").read_text()
+def test_archived_analytical_manuscript_speedups_and_range_adaptive_loop_framing():
+    text = subprocess.check_output(["git", "show", "c4924a4:manuscript/main.tex"], cwd=SCRIPTS.parents[1]).decode()
     abstract = text.split("\\begin{abstract}")[1].split("\\end{abstract}")[0]
     section = text.split("\\label{sec:radar_performance}", 1)[1].split("\\subsection{", 1)[0]
     indexed = {(r["case_id"], r["method"]): float(r["median_time_s"]) for r in saved_rows("benchmark_summary.csv")}

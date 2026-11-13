@@ -1,0 +1,131 @@
+figure,setting,value
+radar_gaussian_statistics,astropy_version,8.0.2
+radar_gaussian_statistics,azimuth_coordinate_sha256,1d4395c8013e24e527915a121c092c029e8dc86c5c0e2da178c3710c5c3101df
+radar_gaussian_statistics,backend,Agg
+radar_gaussian_statistics,background,"white, opaque"
+radar_gaussian_statistics,base_font_size_pt,10.0
+radar_gaussian_statistics,boundaries,periodic azimuth; half-sample reflective range
+radar_gaussian_statistics,canvas_cropping,none (fixed figsize)
+radar_gaussian_statistics,central_definition,"range <= 10000 m, all azimuths; distinct from square display"
+radar_gaussian_statistics,central_gate_count,133
+radar_gaussian_statistics,central_last_gate_center_m,9987.265625
+radar_gaussian_statistics,central_n_accepted,90140
+radar_gaussian_statistics,central_n_negative_raw_variance,0
+radar_gaussian_statistics,checks,PASS: ten immutable evidence files; numerical source hashes; exact raw and decoded radar input; nine released source files; all nine output hashes and filter audit; defined masks; regional counts and raw minima; native mesh and post-filter square zoom
+radar_gaussian_statistics,cmweather_version,0.3.2
+radar_gaussian_statistics,completion,False
+radar_gaussian_statistics,coverage_color_limits,"[0, 1]"
+radar_gaussian_statistics,coverage_colormap,YlGnBu
+radar_gaussian_statistics,coverage_definition,"rho=clip(raw d,0,1), including cells with undefined moments"
+radar_gaussian_statistics,data_panel_size_in,"[1.95, 1.95]"
+radar_gaussian_statistics,dct_toolkit_commit,9cdf40f6ae02a48aa4c6f1eca07de0df6c72935c
+radar_gaussian_statistics,dct_toolkit_version,1.0.0
+radar_gaussian_statistics,decoded_input_sha256,e47d1b8e07791951a602344edcdcf60542a517f385e54c452fd81117f676d9a0
+radar_gaussian_statistics,denominator_floor,0.001
+radar_gaussian_statistics,denominator_rule,"finite raw d > 0.001, strict"
+radar_gaussian_statistics,dense_mesh_rendering,"rasterized native cells; labels, axes and zoom squares remain vector"
+radar_gaussian_statistics,export_dpi,300
+radar_gaussian_statistics,figure_height_in,7.4
+radar_gaussian_statistics,figure_helper_sha256,b93d58ee7d36c707f434c529053f254b22117122da8cb1157ca1e6d14a2167a6
+radar_gaussian_statistics,figure_kind,reproduction of selected natural-mask W15 discrete_spectral arrays; no new numerical run or timing
+radar_gaussian_statistics,figure_layout,"inherited 6.5x7.4 inch canvas, 1.95 inch square panels; no clamping key"
+radar_gaussian_statistics,figure_width_in,6.5
+radar_gaussian_statistics,filter_audit,"{""azimuth_kernel_ffts"": 1180, ""azimuth_kernels"": 1180, ""filter_preparations"": 1, ""full_filter_calls"": 3, ""range_kernel_ffts"": 1, ""range_kernels"": 1}"
+radar_gaussian_statistics,font_family,"[""DejaVu Sans""]"
+radar_gaussian_statistics,full_axis_limits_km,"[-90, 90]"
+radar_gaussian_statistics,gaussian_sigma,converted_grid_width/sqrt(12)
+radar_gaussian_statistics,implementation_scope,experiment-local sampled Gaussian response; not the released Gaussian API
+radar_gaussian_statistics,input_filename,cfrad_QCed_20220223_023027.051_to_20220223_023410.833_COW1high_SUR.nc
+radar_gaussian_statistics,input_sha256,f1e45c26da3002c31cfea1e62ece5a40c18a668d374193205daf793f41a4fae0
+radar_gaussian_statistics,kernel,"normalized exp(-0.5*(integer_offset/sigma)^2), center sampled"
+radar_gaussian_statistics,kernel_radius,ceil(4*sigma)
+radar_gaussian_statistics,kernel_truncate,4.0
+radar_gaussian_statistics,mathtext_fontset,dejavusans
+radar_gaussian_statistics,matplotlib_version,3.10.8
+radar_gaussian_statistics,max_text_size_pt,12.0
+radar_gaussian_statistics,mean_above_color_limit_count,96
+radar_gaussian_statistics,mean_below_color_limit_count,20
+radar_gaussian_statistics,mean_finite_max,42.462627198769965
+radar_gaussian_statistics,mean_finite_min,-0.49924462585780116
+radar_gaussian_statistics,min_text_size_pt,10.1
+radar_gaussian_statistics,n_accepted,640682
+radar_gaussian_statistics,n_input_observed,508956
+radar_gaussian_statistics,n_negative_raw_variance,66
+radar_gaussian_statistics,native_mesh,native midpoint corners and exact circular seam closure; no resampling or transposition
+radar_gaussian_statistics,negative_overlay,"none; numerical raw-variance diagnostics retained here, not highlighted on the maps"
+radar_gaussian_statistics,netCDF4_version,1.7.4
+radar_gaussian_statistics,new_spatial_reference_performed,False
+radar_gaussian_statistics,new_timing_performed,False
+radar_gaussian_statistics,numerical_reference,independent_centered_spatial_gaussian
+radar_gaussian_statistics,numerical_source_sha256,"{""benchmark_helper"": ""17c3232b4a24fa635d56f8958bdc3fa3eee82ced2bc1e06a062c60e253297f16"", ""common"": ""a8520fd9ca1306ff289dca46a278f3eb047608d0fa86f2231461da400a48b17f"", ""experiment"": ""301fd08241b095773b30d055d007a2697636ddd4c364cb716ee8b316f2cfec21"", ""radar_input"": ""98cc65594de08a3f79a478a459f45fb7232e7cb1bbdd75677de2364f1fe52c0d""}"
+radar_gaussian_statistics,numpy_version,2.4.4
+radar_gaussian_statistics,observed_above_color_limit_count,551
+radar_gaussian_statistics,observed_below_color_limit_count,158
+radar_gaussian_statistics,observed_finite_max,55.08000183105469
+radar_gaussian_statistics,observed_finite_min,-12.069999694824219
+radar_gaussian_statistics,operator_order,"azimuth then range, then one normalization"
+radar_gaussian_statistics,output_sha256,"{""coverage"": ""74fb06075c7b7668d73cb740769aba52ce6eb55baa04c706cb41c43f1bd41964"", ""direct_acceptance"": ""eaa3bdb47e733b27749090dc130f7ce0684147f76bc0852c8ad8c35093ffdd7d"", ""mean"": ""0b8bc37716d2cdefb9d07a6733e02563376ae8d60e9330f778072a0d8141bd20"", ""raw_mask_response"": ""3a018631f4f5fc01c6c3cbf6dd8c0e1a3d4cacd19078778b65cd4c40f6719074"", ""raw_variance"": ""018588acb323621b39fffef81e9132888ef51bb732fc3cccc8f5b133f34e5563"", ""second_moment"": ""a5ee82598b9647b816faddf580cb20dbc2c77017a8bbfe863830cbad120e48da"", ""std"": ""333dbd18991a17b60a3bd831ab0ded6128e66c0cecfa0c2bd4530235fb494e51"", ""support"": ""75189151deba857d2d85fe314a865ea69d989e144641803c475681e496902f98"", ""variance"": ""9bb22cecb814eeaf0f1e9d4e3e0895f65c8f0cf204f7a26c0fa47751b28bcb23""}"
+radar_gaussian_statistics,panel_order,"observed, mean, full std, full rho, square-zoom std, square-zoom rho"
+radar_gaussian_statistics,pdf_fonttype,42
+radar_gaussian_statistics,pdf_path,pdf/radar_gaussian_statistics.pdf
+radar_gaussian_statistics,pdf_sha256,3dde0cfb44988515e4db4d51fd00ea16374ba144507949e56e7a129ea2c97469
+radar_gaussian_statistics,plot_coordinates,"x=slant_range*sin(actual_azimuth), y=slant_range*cos(actual_azimuth), km; not surface/geodesic"
+radar_gaussian_statistics,png_path,png/radar_gaussian_statistics.png
+radar_gaussian_statistics,png_sha256,26147bcbc4abde4d84a04ea2211c7414ceb781564f0bf55b2edd482f80773607
+radar_gaussian_statistics,ps_fonttype,42
+radar_gaussian_statistics,purpose,"COW DBZHC Gaussian mean, standard deviation and local data coverage"
+radar_gaussian_statistics,python_version,3.11.13
+radar_gaussian_statistics,range_coordinate_sha256,cfb45955254edf76e355389b23b7e8a85e565059afae8317cd50042780e7c87f
+radar_gaussian_statistics,raw_variance_finite_max,113.86622311739166
+radar_gaussian_statistics,raw_variance_finite_min,-1.8115642319571634e-10
+radar_gaussian_statistics,reflectivity_color_limits_dbz,"[0, 40]"
+radar_gaussian_statistics,reflectivity_colorbar_extend,both
+radar_gaussian_statistics,reflectivity_colormap,ChaseSpectral
+radar_gaussian_statistics,reflectivity_colormap_source,"cmweather.cm_colorblind.ChaseSpectral; required, no fallback"
+radar_gaussian_statistics,restoration,False
+radar_gaussian_statistics,saved_agreement_summary.csv_sha256,6d087be3818f53ff6329cb288649fd4b75c093431f63bf57a485d8cb5d11310f
+radar_gaussian_statistics,saved_benchmark_phases.csv_sha256,8af29461d09304b9c00a17800aeab70251422756cac85b69a7df036cc043924e
+radar_gaussian_statistics,saved_benchmark_runs.csv_sha256,3db2569101e40b8d3be477cc23c2824b4a1d41416cd9f6cc061b52df7912dbad
+radar_gaussian_statistics,saved_benchmark_summary.csv_sha256,bc27de8188f78328f53df51203601bada8715243f08e67d9f6a077c458fc3f69
+radar_gaussian_statistics,saved_comparison.csv_sha256,bc5e722b19bf7758cbe5aa8d2bf1fb49ecda6874fa394854e5811974d5b153a3
+radar_gaussian_statistics,saved_kernel_checks.csv_sha256,6c75c45ead0475ad176de24636b265856ccaa7082603b940d1de8fc8566814af
+radar_gaussian_statistics,saved_kernel_comparison.csv_sha256,eb3ed955f51ac64690beece95d8d7909e8222ba7eacd663f1381099a00389066
+radar_gaussian_statistics,saved_settings.csv_sha256,d6bde42ce270e1bda6c381fcb0c07579950334f81b2ddd4bd3679375d45b0afc
+radar_gaussian_statistics,saved_timing_summary.csv_sha256,2d449b21124f438c2e688d6cbe397eb170c7092532d5c9fe402ce6b2762f93b8
+radar_gaussian_statistics,saved_variance_diagnostics.csv_sha256,f2705564acc684c0ec69fcd318f5b5a714b7ae88c4596a1c5e7bd07fa29d1bb4
+radar_gaussian_statistics,scipy_version,1.17.1
+radar_gaussian_statistics,script_sha256,4cabc20f7037278d3f2ed0b4567afa0589fd555de12e858468e2a6eb2a847405
+radar_gaussian_statistics,selected_case,natural_W15
+radar_gaussian_statistics,selected_method,discrete_spectral
+radar_gaussian_statistics,selected_run,radar-discrete-gaussian-20261110
+radar_gaussian_statistics,std_above_color_limit_count,118
+radar_gaussian_statistics,std_below_color_limit_count,0
+radar_gaussian_statistics,std_color_limits_dbz,"[0, 10]"
+radar_gaussian_statistics,std_colorbar_extend,max
+radar_gaussian_statistics,std_colormap,cividis
+radar_gaussian_statistics,std_finite_max,10.670811736573354
+radar_gaussian_statistics,std_finite_min,0.0
+radar_gaussian_statistics,toolkit_source_sha256.__init__.py,8f8f79946d29e487473b6e2896295c5bb12641b806208f34c1de7a9f6dd6a1c7
+radar_gaussian_statistics,toolkit_source_sha256._geometry.py,6c362987e910c90c5d47f4a6888deff624afbba2eb53af0a769cb54304561e68
+radar_gaussian_statistics,toolkit_source_sha256._kernels.py,ffb9036f7ee39b1a7ada336e518c3639f1391897ef581c73ca8f572f4f1f295d
+radar_gaussian_statistics,toolkit_source_sha256._widths.py,908ea06bafadbd4b208d948cb13909ec22652a444a3f5582dbd4fe828f2e211c
+radar_gaussian_statistics,toolkit_source_sha256.cartesian.py,b9a016be0de4d01d9ac96075ddf4feb3e0828a56ce290033d37f4bce6da73716
+radar_gaussian_statistics,toolkit_source_sha256.core.py,b387d52af62879ac7ce5759cd501835eea511c79cb493f71bcc2db691c63a76d
+radar_gaussian_statistics,toolkit_source_sha256.gap_filling.py,58b45f3c26ae63d8d665e349fc3fdc46b2dfad41f83227d5b1b43814413eebb3
+radar_gaussian_statistics,toolkit_source_sha256.polar.py,68c702812e952cc0e1566477236ecc25597411f9d872b4c2f8fde9047881bb67
+radar_gaussian_statistics,toolkit_source_sha256.stats.py,8c29113bbec5b81a9262fa301e19783e515495a457e732a090a89b4436159146
+radar_gaussian_statistics,variance_reporting,"max(M2-mu^2,0); std is its square root"
+radar_gaussian_statistics,width,15.0
+radar_gaussian_statistics,width_convention,"legacy index widths, not actual physical distance"
+radar_gaussian_statistics,xarray_version,2026.2.0
+radar_gaussian_statistics,zoom_axis_limits_km,"[-10, 10]"
+radar_gaussian_statistics,zoom_count_definition,native cell centers inside square; boundary polygons clipped by viewport
+radar_gaussian_statistics,zoom_definition,-10<=x<=10 km and -10<=y<=10 km
+radar_gaussian_statistics,zoom_gate_count,188
+radar_gaussian_statistics,zoom_n_accepted,99961
+radar_gaussian_statistics,zoom_n_cells,107268
+radar_gaussian_statistics,zoom_n_negative_raw_variance,0
+radar_gaussian_statistics,zoom_n_observed,64534
+radar_gaussian_statistics,zoom_n_undefined,7307
+radar_gaussian_statistics,zoom_outer_cell_corner_m,14146.513671875
+radar_gaussian_statistics,zoom_processing,viewport after full 720x1180 filtering; no cropped filtering or resampling
