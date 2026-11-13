@@ -265,7 +265,16 @@ def test_experimental_settings_keep_the_direct_public_repository_url():
     settings = text.split("\\subsection{Experimental settings}")[1].split("\\subsection{")[0]
     assert r"\url{https://github.com/JValdivia23/cageo-d-26-01410-experiments}" in settings
     assert "public experiment repository" in settings
-    assert "are not yet in the public repository" in settings
+    assert "not yet in the public repository" not in settings
+    availability = text.split(r"\noindent\textbf{Code availability section}", 1)[1].split(
+        r"\noindent\textbf{Data availability}", 1
+    )[0]
+    assert (
+        "https://github.com/JValdivia23/cageo-d-26-01410-experiments/tree/"
+        "3ab46746882a5f82d16957f962a32762e801a578"
+    ) in availability
+    assert r"commit \texttt{3ab4674}" in availability
+    assert "public-archive update is pending" not in availability
 
 
 @pytest.mark.skipif(not RESULT, reason="set GAUSSIAN_DOUBLE_LOOP_RESULT_DIR to the selected run")

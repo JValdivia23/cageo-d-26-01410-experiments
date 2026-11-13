@@ -33,6 +33,10 @@ The main radar presentation selects two implementations for clarity, not because
 
 The selected-run inventory above identifies the current manuscript evidence. Retained historical runs keep their original source hashes, measurements, and toolkit versions; publishing the archive does not rerun or relabel them.
 
+The scientific source/result snapshot is pinned at
+[`3ab4674`](https://github.com/JValdivia23/cageo-d-26-01410-experiments/tree/3ab46746882a5f82d16957f962a32762e801a578).
+Subsequent manuscript-availability updates do not change those measurements.
+
 ## Environment
 
 Verified runtime: **Python 3.11.13, NumPy 2.4.4, SciPy 1.17.1, Astropy 8.0.2**, ship with Matplotlib 3.10.8, Pillow 12.2.0, and cmweather 0.3.2 for figure exports; xarray/netCDF4 are used to read the radar file. Measurements are x86_64 under Rosetta 2, single-threaded (`OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 MKL_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1 NUMEXPR_NUM_THREADS=1`).
@@ -82,6 +86,11 @@ remaining failures require the removed compatibility-name mention. This check
 used the same external radar file and pinned runtimes; it does not make the
 private radar input publicly available. The dated results below describe earlier
 snapshots.
+
+After publication, the availability cross-check verifies the pinned public commit
+instead of requiring a pending-publication sentence. All eight focused
+reporting/table/asset checks pass with that update; the four unrelated
+manuscript-text checks above are retained.
 
 To include the current release checks, retain the archived runtime below for
 legacy tests and additionally set `DCT_TOOLKIT_V2_SOURCE` to the exact v2.0.0
