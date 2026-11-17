@@ -1,0 +1,5 @@
+run_id,case_id,width,region,n_considered,n_defined,max_abs_mean_difference,max_abs_variance_difference,min_raw_variance,n_negative_raw_variance,n_negative_beyond_reference_tolerance
+radar-gaussian-double-loop-20261111,natural_W5,5.0,all,849600,574592,2.1152857243578183e-11,8.693632480571978e-10,-7.224798537208699e-11,52,0
+radar-gaussian-double-loop-20261111,natural_W5,5.0,centre,95760,77889,1.7819523634443613e-11,7.87565568316495e-10,0.7419663241089438,0,0
+radar-gaussian-double-loop-20261111,natural_W15,15.0,all,849600,640682,1.764988155628089e-11,4.3931436266575474e-10,-1.8115642319571634e-10,66,0
+radar-gaussian-double-loop-20261111,natural_W15,15.0,centre,95760,90140,3.183231456205249e-12,1.8053469830192626e-10,3.667526901618544,0,0

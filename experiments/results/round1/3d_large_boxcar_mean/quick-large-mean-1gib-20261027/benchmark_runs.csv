@@ -1,0 +1,9 @@
+run_id,case_id,method,operation,repetition,status,elapsed_s,ram_before_mib,peak_ram_mib,reason
+quick-large-mean-1gib-20261027,gib1_m3,scipy_uniform_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,1,success,14.003392167040147,1102.4765625,2383.08984375,
+quick-large-mean-1gib-20261027,gib1_m3,dct_prepared_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,1,success,15.392899250029586,1112.921875,2392.99609375,
+quick-large-mean-1gib-20261027,gib1_m3,dct_prepared_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,success,15.772524167085066,1113.18359375,2393.21875,
+quick-large-mean-1gib-20261027,gib1_m3,scipy_uniform_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,success,13.956529833958484,1113.69140625,2393.86328125,
+quick-large-mean-1gib-20261027,gib1_m31,scipy_uniform_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,1,success,13.923772874986753,1113.22265625,2353.1171875,
+quick-large-mean-1gib-20261027,gib1_m31,dct_prepared_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,1,success,15.270283124991693,1112.98046875,2393.9765625,
+quick-large-mean-1gib-20261027,gib1_m31,dct_prepared_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,success,15.749346417025663,1113.73046875,2339.0,
+quick-large-mean-1gib-20261027,gib1_m31,scipy_uniform_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,success,13.781314583029598,1113.703125,2393.80859375,

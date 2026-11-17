@@ -1,0 +1,3 @@
+run_id,case_id,method,operation,n_success,n_failure,median_time_s,q25_time_s,q75_time_s,max_peak_ram_mib
+lead-review-radar-exact-only-20261027,natural_W5_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,3,0,0.03810745803639293,0.0380196250625886,0.03988508350448683,
+lead-review-radar-exact-only-20261027,natural_W15_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,3,0,0.03846391697879881,0.038090895977802575,0.03909452096559107,

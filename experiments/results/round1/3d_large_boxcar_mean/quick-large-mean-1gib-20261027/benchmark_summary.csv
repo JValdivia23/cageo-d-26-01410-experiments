@@ -1,0 +1,5 @@
+run_id,case_id,method,operation,n_success,n_failure,median_time_s,q25_time_s,q75_time_s,max_peak_ram_mib
+quick-large-mean-1gib-20261027,gib1_m3,scipy_uniform_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,0,13.979961000499316,13.9682454172289,13.991676583769731,2393.86328125
+quick-large-mean-1gib-20261027,gib1_m3,dct_prepared_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,0,15.582711708557326,15.487805479293456,15.677617937821196,2393.21875
+quick-large-mean-1gib-20261027,gib1_m31,scipy_uniform_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,0,13.852543729008175,13.816929156018887,13.888158301997464,2393.80859375
+quick-large-mean-1gib-20261027,gib1_m31,dct_prepared_inplace,scalar_normalized_mean_two_filters_inplace_setup_included,2,0,15.509814771008678,15.390048948000185,15.62958059401717,2393.9765625

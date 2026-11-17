@@ -1,0 +1,7 @@
+run_id,case_id,method,operation,n_success,n_failure,median_time_s,q25_time_s,q75_time_s,max_peak_ram_mib
+radar-gaussian-double-loop-20261111,natural_W5,discrete_spectral,polar_gaussian_statistics_three_filters_explicit_cell_loops,5,0,0.09320029197260737,0.0906964170280844,0.09330941695952788,257.87109375
+radar-gaussian-double-loop-20261111,natural_W5,explicit_spatial_double_loop,polar_gaussian_statistics_three_filters_explicit_cell_loops,5,0,3.892484624986537,3.8361406669719145,3.9596089579863474,252.15625
+radar-gaussian-double-loop-20261111,natural_W5,discrete_spatial,polar_gaussian_statistics_three_filters_explicit_cell_loops,5,0,0.06908404099522159,0.06876183400163427,0.07079358398914337,207.6796875
+radar-gaussian-double-loop-20261111,natural_W15,explicit_spatial_double_loop,polar_gaussian_statistics_three_filters_explicit_cell_loops,5,0,3.932977582968306,3.8874414999736473,4.091672291979194,246.1796875
+radar-gaussian-double-loop-20261111,natural_W15,discrete_spatial,polar_gaussian_statistics_three_filters_explicit_cell_loops,5,0,0.09316166600910947,0.09295424999436364,0.09447916701901704,221.44921875
+radar-gaussian-double-loop-20261111,natural_W15,discrete_spectral,polar_gaussian_statistics_three_filters_explicit_cell_loops,5,0,0.08760508301202208,0.08393679198343307,0.0918455829960294,251.89453125

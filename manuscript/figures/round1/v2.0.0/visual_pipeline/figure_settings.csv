@@ -1,0 +1,55 @@
+figure,setting,value
+visual_statistics_pipeline,MKL_NUM_THREADS,1
+visual_statistics_pipeline,NUMEXPR_NUM_THREADS,1
+visual_statistics_pipeline,OMP_NUM_THREADS,1
+visual_statistics_pipeline,OPENBLAS_NUM_THREADS,1
+visual_statistics_pipeline,VECLIB_MAXIMUM_THREADS,1
+visual_statistics_pipeline,array_sha256,"{""a1"": ""bb9a2f1be912f20f8f0ffed6d92fea4a61520046193c52e8536f84ab91f18915"", ""a2"": ""b8d52524d173480331bd845ac40cd297ba739cc906edb6288af322a423bdb8b4"", ""coverage"": ""007e59c2e4d98203946a1d773a9423194d9f74183060b55ff47195d091ee9366"", ""d"": ""007e59c2e4d98203946a1d773a9423194d9f74183060b55ff47195d091ee9366"", ""field"": ""1e98ac974d4f19b887abc94c0872e1d72ad2112a73d48c423f1246354af45853"", ""mask"": ""ba0e739dcdc417ff545d035625f9f4ef557d62a73bcdafc0a288d932eede01a2"", ""mean"": ""22d536d1cc1153062ee733ace4384b5f1a19789ebeb00dc6bc892f521896eae6"", ""std"": ""21792ed80473949c09ed635ebca335784e35f5d42b80623f1041acf6ade356b5"", ""transfer"": ""a74a29d26de8d6d672778dc8b17088f6b9aae50adc3a634bb55107fcb19aa7d8"", ""values"": ""a24e418675c7069ddd2c235afb96da2d7d9d2a061f2b7224cbaee1cc4a763746""}"
+visual_statistics_pipeline,astropy_version,8.0.2
+visual_statistics_pipeline,backend,Agg
+visual_statistics_pipeline,background,"white, opaque"
+visual_statistics_pipeline,base_font_size_pt,10.0
+visual_statistics_pipeline,canvas_cropping,none (fixed figsize)
+visual_statistics_pipeline,checks,PASS: spatial raw filters and released direct mean/variance; unchanged layout/palette/crop
+visual_statistics_pipeline,command,"[""experiments/scripts/run_review_v2.py"", ""visual""]"
+visual_statistics_pipeline,common_helper_sha256,aa8d21499b2b17510f08205e46fdc084dcea3d333a903690f548d713845fe317
+visual_statistics_pipeline,cpu,i386
+visual_statistics_pipeline,dct_toolkit_commit,7ff29e998dd1102d3fef2a84050402e86dc7ef67
+visual_statistics_pipeline,dct_toolkit_source,/private/var/folders/nt/th92gg516gqbtqd8y3fqclv00000gp/T/opencode/cageo-v2-20261111/toolkit/dct_toolkit
+visual_statistics_pipeline,dct_toolkit_version,2.0.0
+visual_statistics_pipeline,denominator,finite raw d > 0.001; no completion or restoration
+visual_statistics_pipeline,export_dpi,300
+visual_statistics_pipeline,figure_height_in,3.75
+visual_statistics_pipeline,figure_helper_sha256,b93d58ee7d36c707f434c529053f254b22117122da8cb1157ca1e6d14a2167a6
+visual_statistics_pipeline,figure_width_in,6.5
+visual_statistics_pipeline,font_family,"[""DejaVu Sans""]"
+visual_statistics_pipeline,input_rule,seed 42; unchanged 80x80 field and original validity mask; explicit zero replacement
+visual_statistics_pipeline,logical_cpus,14
+visual_statistics_pipeline,mathtext_fontset,dejavusans
+visual_statistics_pipeline,matplotlib_version,3.10.8
+visual_statistics_pipeline,max_text_size_pt,10.0
+visual_statistics_pipeline,min_text_size_pt,7.0
+visual_statistics_pipeline,netCDF4_version,1.7.4
+visual_statistics_pipeline,numpy_version,2.4.4
+visual_statistics_pipeline,operator,v2.0.0 full normalized sampled Gaussian; width 7; reflective both axes
+visual_statistics_pipeline,pdf_fonttype,42
+visual_statistics_pipeline,pdf_path,pdf/visual_statistics_pipeline.pdf
+visual_statistics_pipeline,pdf_sha256,78de7775126eb4a5f418cb78def3e47f70b743876f25d796fd0a95ab498e4584
+visual_statistics_pipeline,platform,macOS-26.7.2-x86_64-i386-64bit
+visual_statistics_pipeline,png_path,png/visual_statistics_pipeline.png
+visual_statistics_pipeline,png_sha256,0429b7208350fb9a62dbd49858349ab122e5c98e5a0d889bac4edce17d8072fc
+visual_statistics_pipeline,ps_fonttype,42
+visual_statistics_pipeline,psutil_version,7.2.2
+visual_statistics_pipeline,purpose,Illustrative direct normalized statistics; no benchmark
+visual_statistics_pipeline,python_executable,/Users/java1127/anaconda3/envs/dct-publish/bin/python
+visual_statistics_pipeline,python_version,3.11.13
+visual_statistics_pipeline,reference,independent 12-sigma spatial evaluation below float64 tail precision; released statistics API
+visual_statistics_pipeline,review_sources_sha256,"{""_review_common.py"": ""a8520fd9ca1306ff289dca46a278f3eb047608d0fa86f2231461da400a48b17f"", ""_review_figures.py"": ""b93d58ee7d36c707f434c529053f254b22117122da8cb1157ca1e6d14a2167a6"", ""_review_v2_common.py"": ""aa8d21499b2b17510f08205e46fdc084dcea3d333a903690f548d713845fe317"", ""generate_visual_pipeline_figure.py"": ""508f6933fc9728c773c40ab93862944f502c009406faefc7d1ee664c372b6023"", ""run_review_v2.py"": ""8b4ba59856d5eb3592a97b17590ea974ec746e246c7297512c398fd01ee09118""}"
+visual_statistics_pipeline,scipy_version,1.17.1
+visual_statistics_pipeline,script,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO/experiments/scripts/run_review_v2.py
+visual_statistics_pipeline,script_sha256,8b4ba59856d5eb3592a97b17590ea974ec746e246c7297512c398fd01ee09118
+visual_statistics_pipeline,toolkit_source_sha256,"{""__init__.py"": ""a4454641a8c93d555301501f137e1e6fd0b78ab4fc66cd86f6d2cdbd539a6472"", ""_gaussian.py"": ""cb5fdab4a190ab3bbd951d8c1b8a5185da33529739cd8d9feec9a8f2cbeb9bab"", ""_geometry.py"": ""6c362987e910c90c5d47f4a6888deff624afbba2eb53af0a769cb54304561e68"", ""_kernels.py"": ""78a2148715ec21f8b9b7e777d722072278eb91d1fd11a7a43b368c60a5e9593b"", ""_widths.py"": ""908ea06bafadbd4b208d948cb13909ec22652a444a3f5582dbd4fe828f2e211c"", ""cartesian.py"": ""7925aab9a38634c2168803e27087d8c548cf4209dd06284dd9b5a90bcf07ef39"", ""core.py"": ""6b6499c5e6661afbb9393a86070716eeca85722fc789e1203c165d24ac999831"", ""gap_filling.py"": ""58b45f3c26ae63d8d665e349fc3fdc46b2dfad41f83227d5b1b43814413eebb3"", ""polar.py"": ""9a4ebc4eb7b4b3b80363d921870e7787ef9da425259f70ea036cabc43d2fd4be"", ""stats.py"": ""e6bc3d21739b6725256f0300b397d4528061ae1bea911cc476b64b7c7476273c""}"
+visual_statistics_pipeline,toolkit_source_verification,SHA-256 of all ten v2.0.0 Python source files
+visual_statistics_pipeline,version_bridge,explicit runtime bindings; frozen numerical functions unchanged
+visual_statistics_pipeline,working_directory,/Users/java1127/Library/CloudStorage/OneDrive-UCB-O365/Papers/CAGEO
+visual_statistics_pipeline,xarray_version,2026.2.0

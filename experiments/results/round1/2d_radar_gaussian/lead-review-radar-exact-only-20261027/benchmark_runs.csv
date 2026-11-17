@@ -1,0 +1,7 @@
+run_id,case_id,method,operation,repetition,status,elapsed_s,ram_before_mib,peak_ram_mib,reason
+lead-review-radar-exact-only-20261027,natural_W5_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,1,success,0.03810745803639293,,,
+lead-review-radar-exact-only-20261027,natural_W5_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,2,success,0.03793179208878428,,,
+lead-review-radar-exact-only-20261027,natural_W5_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,3,success,0.04166270897258073,,,
+lead-review-radar-exact-only-20261027,natural_W15_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,1,success,0.03972512495238334,,,
+lead-review-radar-exact-only-20261027,natural_W15_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,2,success,0.03846391697879881,,,
+lead-review-radar-exact-only-20261027,natural_W15_floor1e-03,toolkit_v1_polar_direct,mean_only_direct_no_fallback_kernel_construction_included,3,success,0.03771787497680634,,,
