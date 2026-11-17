@@ -51,7 +51,7 @@ python -B experiments/scripts/run_review_v2.py wind --mode all --run-id my-new-r
 python -B experiments/scripts/run_review_v2.py radar --run-id my-new-run --scratch-root /path/to/scratch
 ```
 
-The radar command requires the exact private input identified in
+The radar command requires the exact released input identified in
 `experiments/data/README.md`. Run benchmark campaigns sequentially, not alongside
 other CPU-intensive work.
 
@@ -123,4 +123,4 @@ Legacy figure exporters use the v1.0.0 runtime and may require private
 author-workspace Git history to verify older source identities. In a standalone
 copy, checks requiring that history are explicitly skipped, not treated as
 passed. Saved assets remain usable and their hashes independently verifiable.
-Radar figure reproduction also requires the exact private radar input.
+Radar figure reproduction also requires the exact released radar input.

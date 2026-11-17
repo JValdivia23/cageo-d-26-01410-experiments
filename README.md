@@ -3,7 +3,8 @@
 This repository contains the experiment code, recorded settings, numerical
 results, and reproducible figure assets accompanying CAGEO-D-26-01410.
 It does **not** distribute the article text, bibliography, reviewer responses,
-or private radar observations.
+or private author-workspace history. The exact radar input is distributed
+separately as a release attachment, not as a Git-tracked file.
 
 ## Contents
 
@@ -92,33 +93,42 @@ Tests needing unavailable private Git history, the original absolute checkout
 path, or the exact radar input give explicit skip reasons. These limitations
 are separate from the article-text checks excluded from this public package.
 
-Packaging verification on 17 November 2026 reports **429 passed, 62 skipped**
+Release-documentation verification on 17 November 2026 reports **430 passed, 62 skipped**
 and one existing radar-dependency binary-compatibility warning. All 123 frozen
 numerical source, result, and figure files match the original archive
 byte-for-byte. No full experiment or benchmark campaign was rerun.
 
 ## Data access
 
-The exact processed COW `DBZHC` radar file is **not included**. Its upstream
-quality control, public access route, and redistribution permission remain
-unverified. See `experiments/data/README.md` for its identity and contact the
-author for access. With an independently obtained copy:
+The exact processed COW `DBZHC` input is available in the
+[radar-data-v1 release](https://github.com/JValdivia23/cageo-d-26-01410-experiments/releases/tag/radar-data-v1).
+The unchanged NetCDF file is 766,632,010 bytes (731 MiB). See
+[`experiments/data/README.md`](experiments/data/README.md) for download commands,
+the SHA-256 checksum, and attribution to Wurman and Kosiba's
+[WINTRE-MIX FARM data](https://doi.org/10.48514/WZ46-W047).
+After downloading and verifying the file:
 
 ```bash
 export REAL_RADAR_PATH=/path/to/cfrad_QCed_20220223_023027.051_to_20220223_023410.833_COW1high_SUR.nc
 ```
 
-Full radar reproduction needs that exact file. Synthetic controls and saved
-CSV checks do not require its redistribution.
+Full radar reproduction needs that exact file, which is not included in a Git
+clone or the source-code ZIP. The upstream quality-control procedure is not
+fully documented in the supplied file; publishing it does not establish the
+cause of missing observations.
 
 ## Publication boundary
 
-Only experiment files and necessary numerical figure assets may be published.
+Only experiment files and necessary numerical figure assets belong in Git.
 Do not copy a manuscript checkout, bibliography, review correspondence, private
-input, or old Git history into this repository. The public-archive test checks
-the tracked-file boundary. Original numerical source hashes and saved
-measurements remain unchanged; no benchmark is rerun merely to package them.
+input, or old Git history into this repository. The author-approved public
+radar file is a release asset and remains excluded from Git. The public-archive
+test checks the tracked-file boundary. Original numerical source hashes and
+saved measurements remain unchanged; no benchmark is rerun merely to package
+them.
 
 ## License
 
-MIT; see `LICENSE`. Citation metadata is provided in `CITATION.cff`.
+The software is MIT-licensed; see `LICENSE`. Citation metadata is provided in
+`CITATION.cff`. The radar observations retain their source data terms and
+attribution; the software license does not relicense them.

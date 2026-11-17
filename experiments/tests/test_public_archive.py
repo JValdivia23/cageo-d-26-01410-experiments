@@ -15,7 +15,7 @@ def rows(path):
         return list(csv.DictReader(stream))
 
 
-def test_public_archive_excludes_article_reviews_and_private_input():
+def test_public_archive_excludes_article_reviews_and_binary_observations():
     paths = subprocess.check_output(
         ["git", "ls-files", "-z"], cwd=ROOT
     ).decode().split("\0")
@@ -28,6 +28,31 @@ def test_public_archive_excludes_article_reviews_and_private_input():
         assert not any(part.startswith("comments") for part in path.parts), name
         if path.parts[0] == "manuscript":
             assert path.parts[1] == "figures", name
+
+
+def test_radar_release_instructions_preserve_the_original_input_identity():
+    filename = (
+        "cfrad_QCed_20220223_023027.051_to_20220223_023410.833_COW1high_SUR.nc"
+    )
+    checksum = "f1e45c26da3002c31cfea1e62ece5a40c18a668d374193205daf793f41a4fae0"
+    data = ROOT / "experiments/data"
+    assert (data / "SHA256SUMS").read_text() == f"{checksum}  {filename}\n"
+    instructions = (data / "README.md").read_text()
+    for phrase in (
+        f"releases/download/radar-data-v1/{filename}",
+        "releases/download/radar-data-v1/SHA256SUMS",
+        checksum, "766,632,010", "REAL_RADAR_PATH",
+        "https://doi.org/10.48514/WZ46-W047",
+        "https://data.eol.ucar.edu/dataset/612.037",
+        "MIT software license does not relicense them",
+        "does not fully document",
+    ):
+        assert phrase in instructions
+    source = (
+        ROOT / "experiments/scripts/generate_2d_radar_gaussian_validation.py"
+    ).read_text()
+    assert f'DOCUMENTED_SHA256 = "{checksum}"' in source
+    assert "releases/tag/radar-data-v1" in (ROOT / "README.md").read_text()
 
 
 def test_current_cartesian_ratios_from_saved_repetitions():
