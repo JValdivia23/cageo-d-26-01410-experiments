@@ -10,14 +10,14 @@ recorded measurements or change their source identity.
 `experiments/scripts/run_review_v2.py` binds the unchanged numerical functions
 to source-checked `dct-toolkit` v2.0.0, commit
 `7ff29e998dd1102d3fef2a84050402e86dc7ef67`. It records both bridge and inherited
-source hashes. The four selected campaigns are stored under
+source hashes. The four original release campaigns are stored under
 `experiments/results/round1/v2.0.0/`, each with run ID `release-v2-20261111`.
 
 | Experiment directory | Definition | Recorded scope |
 |---|---|---|
 | `1d_boxcar` | Width-15 half-sample reflective boxcar statistics against NumPy symmetric windows, SciPy uniform filtering, and extended FFT convolution | Three profiles, five replicates, five missing-data patterns; 75 cases |
 | `1d_boundary_comparison` | Complete and middle-gap observations with reflective DCT, periodic FFT, and clipped in-domain NumPy windows | The same two inputs; separate interior agreement and clean-signal errors |
-| `2d_radar_gaussian_double_loop` | Range-dependent, azimuth-first/range-second Gaussian statistics; periodic azimuth and reflective range | One 720 × 1180 COW sweep, W5/W15, matched four-sigma kernels; spectral, explicit Python double-loop, and auxiliary composed SciPy calculations |
+| `2d_radar_gaussian_double_loop` | Range-dependent, azimuth-first/range-second Gaussian statistics; periodic azimuth and reflective range | One 720 × 1180 COW sweep, W5/W15, matched four-sigma kernels; spectral, explicit Python double-loop, and matched SciPy spatial calculations |
 | `3d_wind_boxcar` | Componentwise u/v/w statistics over reflective spatial boxcars, with one common validity mask | Eight grid/window/missingness configurations; 120 timing repetitions across five implementations |
 
 The 1D signals are sampled on 200 points. The profiles are a trend with sine
@@ -54,6 +54,33 @@ python -B experiments/scripts/run_review_v2.py radar --run-id my-new-run --scrat
 The radar command requires the exact released input identified in
 `experiments/data/README.md`. Run benchmark campaigns sequentially, not alongside
 other CPU-intensive work.
+
+### Wind FFT padding comparison
+
+[`astropy-fft-halo-20261118`](results/round1/v2.0.0/3d_wind_boxcar/astropy-fft-halo-20261118/)
+contains the latest five-case wind comparison: six implementations at three grid
+sizes and three boxcar widths, with a shared baseline and approximately 20%
+missingness. The run records three fresh-process repetitions per method and case
+(90 total) and the numerical comparisons, settings, and source hashes. It does
+not replace the earlier eight-case run, which retains the additional missingness
+timings.
+
+Both native Astropy `convolve_fft` settings add a symmetric border and crop to
+the original grid. One adds extra zero padding; the other uses circular
+convolution on the reflected array, which gives the same retained values within
+tolerance because the retained windows do not cross its outer edge. Both calls
+recompute the kernel FFT for each field. Removing the extra padding reduces
+median time and peak process memory in four cases but increases both on the
+largest grid. SciPy's uniform filter has the lowest median runtime in all five
+cases.
+
+Use the versions and thread settings in the top-level README. The inputs are
+synthetic and no radar file is needed:
+
+```bash
+python -B -m pytest -q -p no:cacheprovider experiments/tests/test_wind_fft_padding.py
+python -B experiments/scripts/benchmark_3d_wind_fft_padding.py --mode all --run-id my-new-wind-run
+```
 
 ## Measurement interpretation
 

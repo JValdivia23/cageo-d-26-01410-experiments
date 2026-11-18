@@ -20,6 +20,11 @@ separately as a release attachment, not as a Git-tracked file.
   checks use it; it contains no article source or bibliography.
 - `experiments/README.md`: experiment definitions and reproduction commands.
 
+The latest [wind FFT padding comparison](experiments/README.md#wind-fft-padding-comparison)
+includes 90 measurements for six implementations with matched kernels, boundaries,
+and output grids. The earlier wind size, width, and missingness results remain
+archived separately.
+
 No old repository history is required or included. Historical comparisons that
 require private author-workspace commits are explicitly skipped by the
 standalone compatibility layer; numerical checks are not relaxed.
@@ -28,7 +33,7 @@ standalone compatibility layer; numerical checks are not relaxed.
 
 The current calculations use `dct-toolkit` **v2.0.0**, commit
 `7ff29e998dd1102d3fef2a84050402e86dc7ef67`. The radar benchmark deliberately
-matches a four-standard-deviation sampled Gaussian in both implementations;
+matches a four-standard-deviation sampled Gaussian across all implementations;
 it does not measure the full Gaussian default.
 
 Archived calculations retain **v1.0.0**, commit
